@@ -6,7 +6,7 @@ export default defineConfig({
         lib: {
             entry: './src/main.ts',
             name: 'LocalStoreX',
-            fileName: (format) => `LocalStoreX.${format}.js`
+            fileName: (format) => `localstorex.${format}.js`
         }
     },
     plugins: [dts()]
