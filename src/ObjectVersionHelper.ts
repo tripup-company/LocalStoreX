@@ -29,7 +29,7 @@ export default class ObjectVersionHelper implements IObjectVersionHelper {
      * @return {string} A hash string representing the version of the data.
      */
     generateVersionHash(data: any): string {
-        const sortedData = this.sortObject(data);
+        const sortedData = this.getSortedKeys(data);
         return md5(JSON.stringify(sortedData)) as string;
     }
 
@@ -39,16 +39,32 @@ export default class ObjectVersionHelper implements IObjectVersionHelper {
      * @param {any} obj - The object or array to be sorted.
      * @return {any} - The sorted object or array.
      */
-    private sortObject(obj: any): any {
+    private getSortedKeys(obj: any): any {
         if (Array.isArray(obj)) {
-            return obj.map(item => this.sortObject(item));
+            return obj.map(item => this.getSortedKeys(item)).reduce((acc, val) => {
+                if (typeof val === 'object' && !Array.isArray(val)) {
+                    for (const key in val) {
+                        acc[key] = acc[key] ? [...acc[key], ...val[key]] : val[key];
+                    }
+                }
+                return acc;
+            }, []);
         } else if (typeof obj === 'object' && obj !== null) {
-            const sortedObj: any = {};
-            Object.keys(obj).sort().forEach((key: string) => {
-                sortedObj[key] = this.isDeep ? this.sortObject(obj[key]) : obj[key];
+            const result: any = {};
+            const keys = Object.keys(obj).sort();
+
+            keys.forEach((key: string) => {
+                const value = obj[key];
+
+                if (this.isDeep && typeof value === 'object' && value !== null) {
+                    result[key] = this.getSortedKeys(value);
+                } else {
+                    result[key] = [];
+                }
             });
-            return sortedObj;
+
+            return result;
         }
-        return obj;
+        return [];
     }
 }

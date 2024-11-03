@@ -66,22 +66,19 @@ export default class LocalStoreX {
      * Retrieves an item from storage by its key and optional version.
      *
      * @param {string} key - The key of the item to retrieve.
-     * @param {string | IObjectVersionHelper} [providedVersion] - Optional version or version helper to retrieve a specific version of the item.
+     * @param {string} [version] - Optional version to retrieve a specific version of the item.
      * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
      */
-    getItem(key: string, providedVersion?: string | IObjectVersionHelper) {
+    getItem(key: string, version?: string) {
         const item: IStorageItem | null = this.getExistingItem(key);
         if (!item || this.isExpired(item.expiration)) {
             localStorage.removeItem(key);
             return null;
         }
 
-        const currentVersion = this.getVersion(item.values, providedVersion);
-        const storedValue = this.findStoredValue(item.values, currentVersion);
-
-        return storedValue ? storedValue.data : null;
+        const currentValue = this.findCurrentValue(item.values, version ?? item.currentVersion);
+        return currentValue ? currentValue.data : null;
     }
-
     /**
      * Removes an item from the local storage based on the specified key.
      *
@@ -233,13 +230,13 @@ export default class LocalStoreX {
     }
 
     /**
-     * Finds and returns the stored value that matches the specified version.
+     * Finds and returns the current value that matches the specified version.
      *
      * @param {StoredValue[]} values - An array of stored values to search.
      * @param {string} version - The target version to find in the stored values.
      * @return {StoredValue | undefined} The stored value matching the specified version, or undefined if no match is found.
      */
-    private findStoredValue(values: StoredValue[], version: string): StoredValue | undefined {
+    private findCurrentValue(values: StoredValue[], version: string): StoredValue | undefined {
         return values.find(value => value.version === version);
     }
 }

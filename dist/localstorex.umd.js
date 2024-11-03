@@ -1,6 +1,538 @@
-(function(y,S){typeof exports=="object"&&typeof module<"u"?S(exports):typeof define=="function"&&define.amd?define(["exports"],S):(y=typeof globalThis<"u"?globalThis:y||self,S(y.LocalStoreX={}))})(this,function(y){"use strict";var $=Object.defineProperty;var z=(y,S,x)=>S in y?$(y,S,{enumerable:!0,configurable:!0,writable:!0,value:x}):y[S]=x;var F=(y,S,x)=>z(y,typeof S!="symbol"?S+"":S,x);function S(f){return f&&f.__esModule&&Object.prototype.hasOwnProperty.call(f,"default")?f.default:f}var x={exports:{}},B={exports:{}};(function(){var f="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",a={rotl:function(o,s){return o<<s|o>>>32-s},rotr:function(o,s){return o<<32-s|o>>>s},endian:function(o){if(o.constructor==Number)return a.rotl(o,8)&16711935|a.rotl(o,24)&4278255360;for(var s=0;s<o.length;s++)o[s]=a.endian(o[s]);return o},randomBytes:function(o){for(var s=[];o>0;o--)s.push(Math.floor(Math.random()*256));return s},bytesToWords:function(o){for(var s=[],c=0,l=0;c<o.length;c++,l+=8)s[l>>>5]|=o[c]<<24-l%32;return s},wordsToBytes:function(o){for(var s=[],c=0;c<o.length*32;c+=8)s.push(o[c>>>5]>>>24-c%32&255);return s},bytesToHex:function(o){for(var s=[],c=0;c<o.length;c++)s.push((o[c]>>>4).toString(16)),s.push((o[c]&15).toString(16));return s.join("")},hexToBytes:function(o){for(var s=[],c=0;c<o.length;c+=2)s.push(parseInt(o.substr(c,2),16));return s},bytesToBase64:function(o){for(var s=[],c=0;c<o.length;c+=3)for(var l=o[c]<<16|o[c+1]<<8|o[c+2],h=0;h<4;h++)c*8+h*6<=o.length*8?s.push(f.charAt(l>>>6*(3-h)&63)):s.push("=");return s.join("")},base64ToBytes:function(o){o=o.replace(/[^A-Z0-9+\/]/ig,"");for(var s=[],c=0,l=0;c<o.length;l=++c%4)l!=0&&s.push((f.indexOf(o.charAt(c-1))&Math.pow(2,-2*l+8)-1)<<l*2|f.indexOf(o.charAt(c))>>>6-l*2);return s}};B.exports=a})();var A=B.exports,T={utf8:{stringToBytes:function(f){return T.bin.stringToBytes(unescape(encodeURIComponent(f)))},bytesToString:function(f){return decodeURIComponent(escape(T.bin.bytesToString(f)))}},bin:{stringToBytes:function(f){for(var a=[],o=0;o<f.length;o++)a.push(f.charCodeAt(o)&255);return a},bytesToString:function(f){for(var a=[],o=0;o<f.length;o++)a.push(String.fromCharCode(f[o]));return a.join("")}}},E=T;/*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */var H=function(f){return f!=null&&(w(f)||D(f)||!!f._isBuffer)};function w(f){return!!f.constructor&&typeof f.constructor.isBuffer=="function"&&f.constructor.isBuffer(f)}function D(f){return typeof f.readFloatLE=="function"&&typeof f.slice=="function"&&w(f.slice(0,0))}(function(){var f=A,a=E.utf8,o=H,s=E.bin,c=function(l,h){l.constructor==String?h&&h.encoding==="binary"?l=s.stringToBytes(l):l=a.stringToBytes(l):o(l)?l=Array.prototype.slice.call(l,0):!Array.isArray(l)&&l.constructor!==Uint8Array&&(l=l.toString());for(var i=f.bytesToWords(l),m=l.length*8,r=1732584193,t=-271733879,n=-1732584194,e=271733878,u=0;u<i.length;u++)i[u]=(i[u]<<8|i[u]>>>24)&16711935|(i[u]<<24|i[u]>>>8)&4278255360;i[m>>>5]|=128<<m%32,i[(m+64>>>9<<4)+14]=m;for(var p=c._ff,g=c._gg,d=c._hh,v=c._ii,u=0;u<i.length;u+=16){var _=r,J=t,M=n,U=e;r=p(r,t,n,e,i[u+0],7,-680876936),e=p(e,r,t,n,i[u+1],12,-389564586),n=p(n,e,r,t,i[u+2],17,606105819),t=p(t,n,e,r,i[u+3],22,-1044525330),r=p(r,t,n,e,i[u+4],7,-176418897),e=p(e,r,t,n,i[u+5],12,1200080426),n=p(n,e,r,t,i[u+6],17,-1473231341),t=p(t,n,e,r,i[u+7],22,-45705983),r=p(r,t,n,e,i[u+8],7,1770035416),e=p(e,r,t,n,i[u+9],12,-1958414417),n=p(n,e,r,t,i[u+10],17,-42063),t=p(t,n,e,r,i[u+11],22,-1990404162),r=p(r,t,n,e,i[u+12],7,1804603682),e=p(e,r,t,n,i[u+13],12,-40341101),n=p(n,e,r,t,i[u+14],17,-1502002290),t=p(t,n,e,r,i[u+15],22,1236535329),r=g(r,t,n,e,i[u+1],5,-165796510),e=g(e,r,t,n,i[u+6],9,-1069501632),n=g(n,e,r,t,i[u+11],14,643717713),t=g(t,n,e,r,i[u+0],20,-373897302),r=g(r,t,n,e,i[u+5],5,-701558691),e=g(e,r,t,n,i[u+10],9,38016083),n=g(n,e,r,t,i[u+15],14,-660478335),t=g(t,n,e,r,i[u+4],20,-405537848),r=g(r,t,n,e,i[u+9],5,568446438),e=g(e,r,t,n,i[u+14],9,-1019803690),n=g(n,e,r,t,i[u+3],14,-187363961),t=g(t,n,e,r,i[u+8],20,1163531501),r=g(r,t,n,e,i[u+13],5,-1444681467),e=g(e,r,t,n,i[u+2],9,-51403784),n=g(n,e,r,t,i[u+7],14,1735328473),t=g(t,n,e,r,i[u+12],20,-1926607734),r=d(r,t,n,e,i[u+5],4,-378558),e=d(e,r,t,n,i[u+8],11,-2022574463),n=d(n,e,r,t,i[u+11],16,1839030562),t=d(t,n,e,r,i[u+14],23,-35309556),r=d(r,t,n,e,i[u+1],4,-1530992060),e=d(e,r,t,n,i[u+4],11,1272893353),n=d(n,e,r,t,i[u+7],16,-155497632),t=d(t,n,e,r,i[u+10],23,-1094730640),r=d(r,t,n,e,i[u+13],4,681279174),e=d(e,r,t,n,i[u+0],11,-358537222),n=d(n,e,r,t,i[u+3],16,-722521979),t=d(t,n,e,r,i[u+6],23,76029189),r=d(r,t,n,e,i[u+9],4,-640364487),e=d(e,r,t,n,i[u+12],11,-421815835),n=d(n,e,r,t,i[u+15],16,530742520),t=d(t,n,e,r,i[u+2],23,-995338651),r=v(r,t,n,e,i[u+0],6,-198630844),e=v(e,r,t,n,i[u+7],10,1126891415),n=v(n,e,r,t,i[u+14],15,-1416354905),t=v(t,n,e,r,i[u+5],21,-57434055),r=v(r,t,n,e,i[u+12],6,1700485571),e=v(e,r,t,n,i[u+3],10,-1894986606),n=v(n,e,r,t,i[u+10],15,-1051523),t=v(t,n,e,r,i[u+1],21,-2054922799),r=v(r,t,n,e,i[u+8],6,1873313359),e=v(e,r,t,n,i[u+15],10,-30611744),n=v(n,e,r,t,i[u+6],15,-1560198380),t=v(t,n,e,r,i[u+13],21,1309151649),r=v(r,t,n,e,i[u+4],6,-145523070),e=v(e,r,t,n,i[u+11],10,-1120210379),n=v(n,e,r,t,i[u+2],15,718787259),t=v(t,n,e,r,i[u+9],21,-343485551),r=r+_>>>0,t=t+J>>>0,n=n+M>>>0,e=e+U>>>0}return f.endian([r,t,n,e])};c._ff=function(l,h,i,m,r,t,n){var e=l+(h&i|~h&m)+(r>>>0)+n;return(e<<t|e>>>32-t)+h},c._gg=function(l,h,i,m,r,t,n){var e=l+(h&m|i&~m)+(r>>>0)+n;return(e<<t|e>>>32-t)+h},c._hh=function(l,h,i,m,r,t,n){var e=l+(h^i^m)+(r>>>0)+n;return(e<<t|e>>>32-t)+h},c._ii=function(l,h,i,m,r,t,n){var e=l+(i^(h|~m))+(r>>>0)+n;return(e<<t|e>>>32-t)+h},c._blocksize=16,c._digestsize=16,x.exports=function(l,h){if(l==null)throw new Error("Illegal argument "+l);var i=f.wordsToBytes(c(l,h));return h&&h.asBytes?i:h&&h.asString?s.bytesToString(i):f.bytesToHex(i)}})();var N=x.exports;const C=S(N);class V{constructor(){F(this,"isDeep",!1)}setDeepTraversal(a){this.isDeep=a}generateVersionHash(a){const o=this.sortObject(a);return C(JSON.stringify(o))}sortObject(a){if(Array.isArray(a))return a.map(o=>this.sortObject(o));if(typeof a=="object"&&a!==null){const o={};return Object.keys(a).sort().forEach(s=>{o[s]=this.isDeep?this.sortObject(a[s]):a[s]}),o}return a}}const I=class I{constructor(a=I.defaultVersionHelper){this.objectVersionHelper=a,this.cleanupExpiredItems()}static getInstance(){return I.instance||(I.instance=new I),I.instance}setItem(a,o,s,c){const l=this.getVersion(o,c),h=this.getExistingItem(a)??this.createNewItem(l,s);this.updateOrAddValue(h,l,o),this.updateCurrentVersion(h,l,s),localStorage.setItem(a,JSON.stringify(h))}getItem(a,o){const s=this.getExistingItem(a);if(!s||this.isExpired(s.expiration))return localStorage.removeItem(a),null;const c=this.getVersion(s.values,o),l=this.findStoredValue(s.values,c);return l?l.data:null}removeItem(a){localStorage.removeItem(a)}clear(){localStorage.clear()}removeVersionItem(a,o){const s=this.getExistingItem(a);s&&(s.values=s.values.filter(c=>c.version!==o),s.values.length===0?this.removeItem(a):(s.currentVersion=s.values[s.values.length-1].version,localStorage.setItem(a,JSON.stringify(s))))}getExistingItem(a){const o=localStorage.getItem(a);return o?JSON.parse(o):null}createNewItem(a,o){return{currentVersion:a,expiration:o?Date.now()+o*36e5:null,values:[]}}updateOrAddValue(a,o,s){const c=a.values.find(l=>l.version===o);c?c.data=s:a.values.push({version:o,data:s})}updateCurrentVersion(a,o,s){a.currentVersion=o,a.expiration=s?Date.now()+s*36e5:a.expiration}getVersion(a,o){return typeof o=="string"?o:o instanceof V?o.generateVersionHash(a):this.objectVersionHelper.generateVersionHash(a)}isExpired(a){return a!==null&&Date.now()>a}cleanupExpiredItems(){for(let a=0;a<localStorage.length;a++){const o=localStorage.key(a);if(o){const s=localStorage.getItem(o);if(s)try{const c=JSON.parse(s);this.isExpired(c.expiration)&&localStorage.removeItem(o)}catch{console.warn(`Invalid JSON data for key "${o}": ${s}`),localStorage.removeItem(o)}}}}findStoredValue(a,o){return a.find(s=>s.version===o)}};F(I,"instance"),F(I,"defaultVersionHelper",new V);let O=I;y.LocalStoreX=O,y.ObjectVersionHelper=V,Object.defineProperty(y,Symbol.toStringTag,{value:"Module"})});
+(function(global, factory) {
+  typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global.LocalStoreX = {}));
+})(this, function(exports2) {
+  "use strict";var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var md5$1 = { exports: {} };
+  var crypt = { exports: {} };
+  (function() {
+    var base64map = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", crypt$1 = {
+      // Bit-wise rotation left
+      rotl: function(n, b) {
+        return n << b | n >>> 32 - b;
+      },
+      // Bit-wise rotation right
+      rotr: function(n, b) {
+        return n << 32 - b | n >>> b;
+      },
+      // Swap big-endian to little-endian and vice versa
+      endian: function(n) {
+        if (n.constructor == Number) {
+          return crypt$1.rotl(n, 8) & 16711935 | crypt$1.rotl(n, 24) & 4278255360;
+        }
+        for (var i = 0; i < n.length; i++)
+          n[i] = crypt$1.endian(n[i]);
+        return n;
+      },
+      // Generate an array of any length of random bytes
+      randomBytes: function(n) {
+        for (var bytes = []; n > 0; n--)
+          bytes.push(Math.floor(Math.random() * 256));
+        return bytes;
+      },
+      // Convert a byte array to big-endian 32-bit words
+      bytesToWords: function(bytes) {
+        for (var words = [], i = 0, b = 0; i < bytes.length; i++, b += 8)
+          words[b >>> 5] |= bytes[i] << 24 - b % 32;
+        return words;
+      },
+      // Convert big-endian 32-bit words to a byte array
+      wordsToBytes: function(words) {
+        for (var bytes = [], b = 0; b < words.length * 32; b += 8)
+          bytes.push(words[b >>> 5] >>> 24 - b % 32 & 255);
+        return bytes;
+      },
+      // Convert a byte array to a hex string
+      bytesToHex: function(bytes) {
+        for (var hex = [], i = 0; i < bytes.length; i++) {
+          hex.push((bytes[i] >>> 4).toString(16));
+          hex.push((bytes[i] & 15).toString(16));
+        }
+        return hex.join("");
+      },
+      // Convert a hex string to a byte array
+      hexToBytes: function(hex) {
+        for (var bytes = [], c = 0; c < hex.length; c += 2)
+          bytes.push(parseInt(hex.substr(c, 2), 16));
+        return bytes;
+      },
+      // Convert a byte array to a base-64 string
+      bytesToBase64: function(bytes) {
+        for (var base64 = [], i = 0; i < bytes.length; i += 3) {
+          var triplet = bytes[i] << 16 | bytes[i + 1] << 8 | bytes[i + 2];
+          for (var j = 0; j < 4; j++)
+            if (i * 8 + j * 6 <= bytes.length * 8)
+              base64.push(base64map.charAt(triplet >>> 6 * (3 - j) & 63));
+            else
+              base64.push("=");
+        }
+        return base64.join("");
+      },
+      // Convert a base-64 string to a byte array
+      base64ToBytes: function(base64) {
+        base64 = base64.replace(/[^A-Z0-9+\/]/ig, "");
+        for (var bytes = [], i = 0, imod4 = 0; i < base64.length; imod4 = ++i % 4) {
+          if (imod4 == 0) continue;
+          bytes.push((base64map.indexOf(base64.charAt(i - 1)) & Math.pow(2, -2 * imod4 + 8) - 1) << imod4 * 2 | base64map.indexOf(base64.charAt(i)) >>> 6 - imod4 * 2);
+        }
+        return bytes;
+      }
+    };
+    crypt.exports = crypt$1;
+  })();
+  var cryptExports = crypt.exports;
+  var charenc = {
+    // UTF-8 encoding
+    utf8: {
+      // Convert a string to a byte array
+      stringToBytes: function(str) {
+        return charenc.bin.stringToBytes(unescape(encodeURIComponent(str)));
+      },
+      // Convert a byte array to a string
+      bytesToString: function(bytes) {
+        return decodeURIComponent(escape(charenc.bin.bytesToString(bytes)));
+      }
+    },
+    // Binary encoding
+    bin: {
+      // Convert a string to a byte array
+      stringToBytes: function(str) {
+        for (var bytes = [], i = 0; i < str.length; i++)
+          bytes.push(str.charCodeAt(i) & 255);
+        return bytes;
+      },
+      // Convert a byte array to a string
+      bytesToString: function(bytes) {
+        for (var str = [], i = 0; i < bytes.length; i++)
+          str.push(String.fromCharCode(bytes[i]));
+        return str.join("");
+      }
+    }
+  };
+  var charenc_1 = charenc;
+  /*!
+   * Determine if an object is a Buffer
+   *
+   * @author   Feross Aboukhadijeh <https://feross.org>
+   * @license  MIT
+   */
+  var isBuffer_1 = function(obj) {
+    return obj != null && (isBuffer(obj) || isSlowBuffer(obj) || !!obj._isBuffer);
+  };
+  function isBuffer(obj) {
+    return !!obj.constructor && typeof obj.constructor.isBuffer === "function" && obj.constructor.isBuffer(obj);
+  }
+  function isSlowBuffer(obj) {
+    return typeof obj.readFloatLE === "function" && typeof obj.slice === "function" && isBuffer(obj.slice(0, 0));
+  }
+  (function() {
+    var crypt2 = cryptExports, utf8 = charenc_1.utf8, isBuffer2 = isBuffer_1, bin = charenc_1.bin, md52 = function(message, options) {
+      if (message.constructor == String)
+        if (options && options.encoding === "binary")
+          message = bin.stringToBytes(message);
+        else
+          message = utf8.stringToBytes(message);
+      else if (isBuffer2(message))
+        message = Array.prototype.slice.call(message, 0);
+      else if (!Array.isArray(message) && message.constructor !== Uint8Array)
+        message = message.toString();
+      var m = crypt2.bytesToWords(message), l = message.length * 8, a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+      for (var i = 0; i < m.length; i++) {
+        m[i] = (m[i] << 8 | m[i] >>> 24) & 16711935 | (m[i] << 24 | m[i] >>> 8) & 4278255360;
+      }
+      m[l >>> 5] |= 128 << l % 32;
+      m[(l + 64 >>> 9 << 4) + 14] = l;
+      var FF = md52._ff, GG = md52._gg, HH = md52._hh, II = md52._ii;
+      for (var i = 0; i < m.length; i += 16) {
+        var aa = a, bb = b, cc = c, dd = d;
+        a = FF(a, b, c, d, m[i + 0], 7, -680876936);
+        d = FF(d, a, b, c, m[i + 1], 12, -389564586);
+        c = FF(c, d, a, b, m[i + 2], 17, 606105819);
+        b = FF(b, c, d, a, m[i + 3], 22, -1044525330);
+        a = FF(a, b, c, d, m[i + 4], 7, -176418897);
+        d = FF(d, a, b, c, m[i + 5], 12, 1200080426);
+        c = FF(c, d, a, b, m[i + 6], 17, -1473231341);
+        b = FF(b, c, d, a, m[i + 7], 22, -45705983);
+        a = FF(a, b, c, d, m[i + 8], 7, 1770035416);
+        d = FF(d, a, b, c, m[i + 9], 12, -1958414417);
+        c = FF(c, d, a, b, m[i + 10], 17, -42063);
+        b = FF(b, c, d, a, m[i + 11], 22, -1990404162);
+        a = FF(a, b, c, d, m[i + 12], 7, 1804603682);
+        d = FF(d, a, b, c, m[i + 13], 12, -40341101);
+        c = FF(c, d, a, b, m[i + 14], 17, -1502002290);
+        b = FF(b, c, d, a, m[i + 15], 22, 1236535329);
+        a = GG(a, b, c, d, m[i + 1], 5, -165796510);
+        d = GG(d, a, b, c, m[i + 6], 9, -1069501632);
+        c = GG(c, d, a, b, m[i + 11], 14, 643717713);
+        b = GG(b, c, d, a, m[i + 0], 20, -373897302);
+        a = GG(a, b, c, d, m[i + 5], 5, -701558691);
+        d = GG(d, a, b, c, m[i + 10], 9, 38016083);
+        c = GG(c, d, a, b, m[i + 15], 14, -660478335);
+        b = GG(b, c, d, a, m[i + 4], 20, -405537848);
+        a = GG(a, b, c, d, m[i + 9], 5, 568446438);
+        d = GG(d, a, b, c, m[i + 14], 9, -1019803690);
+        c = GG(c, d, a, b, m[i + 3], 14, -187363961);
+        b = GG(b, c, d, a, m[i + 8], 20, 1163531501);
+        a = GG(a, b, c, d, m[i + 13], 5, -1444681467);
+        d = GG(d, a, b, c, m[i + 2], 9, -51403784);
+        c = GG(c, d, a, b, m[i + 7], 14, 1735328473);
+        b = GG(b, c, d, a, m[i + 12], 20, -1926607734);
+        a = HH(a, b, c, d, m[i + 5], 4, -378558);
+        d = HH(d, a, b, c, m[i + 8], 11, -2022574463);
+        c = HH(c, d, a, b, m[i + 11], 16, 1839030562);
+        b = HH(b, c, d, a, m[i + 14], 23, -35309556);
+        a = HH(a, b, c, d, m[i + 1], 4, -1530992060);
+        d = HH(d, a, b, c, m[i + 4], 11, 1272893353);
+        c = HH(c, d, a, b, m[i + 7], 16, -155497632);
+        b = HH(b, c, d, a, m[i + 10], 23, -1094730640);
+        a = HH(a, b, c, d, m[i + 13], 4, 681279174);
+        d = HH(d, a, b, c, m[i + 0], 11, -358537222);
+        c = HH(c, d, a, b, m[i + 3], 16, -722521979);
+        b = HH(b, c, d, a, m[i + 6], 23, 76029189);
+        a = HH(a, b, c, d, m[i + 9], 4, -640364487);
+        d = HH(d, a, b, c, m[i + 12], 11, -421815835);
+        c = HH(c, d, a, b, m[i + 15], 16, 530742520);
+        b = HH(b, c, d, a, m[i + 2], 23, -995338651);
+        a = II(a, b, c, d, m[i + 0], 6, -198630844);
+        d = II(d, a, b, c, m[i + 7], 10, 1126891415);
+        c = II(c, d, a, b, m[i + 14], 15, -1416354905);
+        b = II(b, c, d, a, m[i + 5], 21, -57434055);
+        a = II(a, b, c, d, m[i + 12], 6, 1700485571);
+        d = II(d, a, b, c, m[i + 3], 10, -1894986606);
+        c = II(c, d, a, b, m[i + 10], 15, -1051523);
+        b = II(b, c, d, a, m[i + 1], 21, -2054922799);
+        a = II(a, b, c, d, m[i + 8], 6, 1873313359);
+        d = II(d, a, b, c, m[i + 15], 10, -30611744);
+        c = II(c, d, a, b, m[i + 6], 15, -1560198380);
+        b = II(b, c, d, a, m[i + 13], 21, 1309151649);
+        a = II(a, b, c, d, m[i + 4], 6, -145523070);
+        d = II(d, a, b, c, m[i + 11], 10, -1120210379);
+        c = II(c, d, a, b, m[i + 2], 15, 718787259);
+        b = II(b, c, d, a, m[i + 9], 21, -343485551);
+        a = a + aa >>> 0;
+        b = b + bb >>> 0;
+        c = c + cc >>> 0;
+        d = d + dd >>> 0;
+      }
+      return crypt2.endian([a, b, c, d]);
+    };
+    md52._ff = function(a, b, c, d, x, s, t) {
+      var n = a + (b & c | ~b & d) + (x >>> 0) + t;
+      return (n << s | n >>> 32 - s) + b;
+    };
+    md52._gg = function(a, b, c, d, x, s, t) {
+      var n = a + (b & d | c & ~d) + (x >>> 0) + t;
+      return (n << s | n >>> 32 - s) + b;
+    };
+    md52._hh = function(a, b, c, d, x, s, t) {
+      var n = a + (b ^ c ^ d) + (x >>> 0) + t;
+      return (n << s | n >>> 32 - s) + b;
+    };
+    md52._ii = function(a, b, c, d, x, s, t) {
+      var n = a + (c ^ (b | ~d)) + (x >>> 0) + t;
+      return (n << s | n >>> 32 - s) + b;
+    };
+    md52._blocksize = 16;
+    md52._digestsize = 16;
+    md5$1.exports = function(message, options) {
+      if (message === void 0 || message === null)
+        throw new Error("Illegal argument " + message);
+      var digestbytes = crypt2.wordsToBytes(md52(message, options));
+      return options && options.asBytes ? digestbytes : options && options.asString ? bin.bytesToString(digestbytes) : crypt2.bytesToHex(digestbytes);
+    };
+  })();
+  var md5Exports = md5$1.exports;
+  const md5 = /* @__PURE__ */ getDefaultExportFromCjs(md5Exports);
+  class ObjectVersionHelper {
+    constructor() {
+      /**
+       * Indicates whether a certain operation should be performed in a deep or shallow manner.
+       *
+       * When set to `true`, the operation will be performed deeply, which typically means
+       * that nested structures will also be traversed or processed.
+       *
+       * When set to `false`, the operation will be shallow, affecting only the top-level
+       * elements.
+       */
+      __publicField(this, "isDeep", false);
+    }
+    /**
+     * Sets the deep sorting flag.
+     *
+     * @param {boolean} isDeep - Indicates whether the sorting of the object should be deep.
+     */
+    setDeepTraversal(isDeep) {
+      this.isDeep = isDeep;
+    }
+    /**
+     * Generates a version hash for the given data.
+     *
+     * @param {any} data - The data for which the version hash is to be created.
+     * @return {string} A hash string representing the version of the data.
+     */
+    generateVersionHash(data) {
+      const sortedData = this.getSortedKeys(data);
+      return md5(JSON.stringify(sortedData));
+    }
+    /**
+     * Recursively sorts the keys of an object or array.
+     *
+     * @param {any} obj - The object or array to be sorted.
+     * @return {any} - The sorted object or array.
+     */
+    getSortedKeys(obj) {
+      if (Array.isArray(obj)) {
+        return obj.map((item) => this.getSortedKeys(item)).reduce((acc, val) => {
+          if (typeof val === "object" && !Array.isArray(val)) {
+            for (const key in val) {
+              acc[key] = acc[key] ? [...acc[key], ...val[key]] : val[key];
+            }
+          }
+          return acc;
+        }, []);
+      } else if (typeof obj === "object" && obj !== null) {
+        const result = {};
+        const keys = Object.keys(obj).sort();
+        keys.forEach((key) => {
+          const value = obj[key];
+          if (this.isDeep && typeof value === "object" && value !== null) {
+            result[key] = this.getSortedKeys(value);
+          } else {
+            result[key] = [];
+          }
+        });
+        return result;
+      }
+      return [];
+    }
+  }
+  const _LocalStoreX = class _LocalStoreX {
+    /**
+     * Constructor for initializing the object with a version helper and performing cleanup of expired items.
+     *
+     * @param {IObjectVersionHelper} objectVersionHelper - An instance used to manage versioning of objects.
+     *
+     * @return {void}
+     */
+    constructor(objectVersionHelper = _LocalStoreX.defaultVersionHelper) {
+      this.objectVersionHelper = objectVersionHelper;
+      this.cleanupExpiredItems();
+    }
+    /**
+     * Retrieves the singleton instance of the LocalStoreX class.
+     * If no instance exists, a new one will be created.
+     *
+     * @return {LocalStoreX} The singleton instance of LocalStoreX.
+     */
+    static getInstance() {
+      if (!_LocalStoreX.instance) {
+        _LocalStoreX.instance = new _LocalStoreX();
+      }
+      return _LocalStoreX.instance;
+    }
+    /**
+     * Stores an item in the local storage with the specified key, data, and optional version and expiration.
+     *
+     * @param {string} key - The key under which the data will be stored.
+     * @param {any} data - The data to be stored.
+     * @param {number} [expiration] - Optional expiration time for the data in milliseconds.
+     * @param {string | IObjectVersionHelper} [providedVersion] - Optional version information for the data.
+     * @return {void}
+     */
+    setItem(key, data, expiration, providedVersion) {
+      const version = this.getVersion(data, providedVersion);
+      const item = this.getExistingItem(key) ?? this.createNewItem(version, expiration);
+      this.updateOrAddValue(item, version, data);
+      this.updateCurrentVersion(item, version, expiration);
+      localStorage.setItem(key, JSON.stringify(item));
+    }
+    /**
+     * Retrieves an item from storage by its key and optional version.
+     *
+     * @param {string} key - The key of the item to retrieve.
+     * @param {string} [version] - Optional version to retrieve a specific version of the item.
+     * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
+     */
+    getItem(key, version) {
+      const item = this.getExistingItem(key);
+      if (!item || this.isExpired(item.expiration)) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      const currentValue = this.findCurrentValue(item.values, version ?? item.currentVersion);
+      return currentValue ? currentValue.data : null;
+    }
+    /**
+     * Removes an item from the local storage based on the specified key.
+     *
+     * @param {string} key - The key of the item to be removed from local storage.
+     * @return {void} No return value.
+     */
+    removeItem(key) {
+      localStorage.removeItem(key);
+    }
+    /**
+     * Clears all key-value pairs stored in the local storage.
+     *
+     * @return {void} - No return value.
+     */
+    clear() {
+      localStorage.clear();
+    }
+    /**
+     * Removes a specific version entry associated with the given key from storage.
+     *
+     * @param {string} key - The key associated with the item in storage.
+     * @param {string} version - The version of the item to be removed.
+     * @return {void}
+     */
+    removeVersionItem(key, version) {
+      const item = this.getExistingItem(key);
+      if (!item) return;
+      item.values = item.values.filter((value) => value.version !== version);
+      if (item.values.length === 0) {
+        localStorage.removeItem(key);
+      } else {
+        item.currentVersion = item.values[item.values.length - 1].version;
+        localStorage.setItem(key, JSON.stringify(item));
+      }
+    }
+    /**
+     * Retrieves an existing item from local storage.
+     *
+     * @param {string} key - The key under which the item is stored.
+     * @return {IStorageItem | null} The parsed item if found, otherwise null.
+     */
+    getExistingItem(key) {
+      const itemStr = localStorage.getItem(key);
+      return itemStr ? JSON.parse(itemStr) : null;
+    }
+    /**
+     * Creates a new storage item with the specified version and optional expiration time.
+     *
+     * @param {string} version - The current version of the item.
+     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration date will be set.
+     * @return {IStorageItem} The newly created storage item.
+     */
+    createNewItem(version, expiration) {
+      return {
+        currentVersion: version,
+        expiration: expiration ? Date.now() + expiration * 36e5 : null,
+        values: []
+      };
+    }
+    /**
+     * Updates an existing value or adds a new value to the storage item.
+     *
+     * @param {IStorageItem} item - The storage item containing values.
+     * @param {string} version - The version identifier for the value.
+     * @param {any} data - The data to be associated with the specified version.
+     * @return {void}
+     */
+    updateOrAddValue(item, version, data) {
+      const existingValue = item.values.find((value) => value.version === version);
+      if (existingValue) {
+        existingValue.data = data;
+      } else {
+        item.values.push({ version, data });
+      }
+    }
+    /**
+     * Updates the current version and expiration time of the given storage item.
+     *
+     * @param {IStorageItem} item - The storage item to update.
+     * @param {string} version - The new version to set for the storage item.
+     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration time is updated.
+     *
+     * @return {void}
+     */
+    updateCurrentVersion(item, version, expiration) {
+      item.currentVersion = version;
+      item.expiration = expiration ? Date.now() + expiration * 36e5 : item.expiration;
+    }
+    /**
+     * Retrieves the version string based on the provided value and optional version information.
+     *
+     * @param {any} value - The value to generate or retrieve the version for.
+     * @param {string | IObjectVersionHelper} [providedVersion] - Optional version information provided either as a string or an instance of IObjectVersionHelper.
+     * @return {string} The generated or provided version string.
+     */
+    getVersion(value, providedVersion) {
+      if (typeof providedVersion === "string") {
+        return providedVersion;
+      } else if (providedVersion instanceof ObjectVersionHelper) {
+        return providedVersion.generateVersionHash(value);
+      } else {
+        return this.objectVersionHelper.generateVersionHash(value);
+      }
+    }
+    /**
+     * Checks whether the given expiration timestamp has passed.
+     *
+     * @param {number | null} expiration - The timestamp to check for expiration, or null to indicate no expiration.
+     * @return {boolean} Returns true if the current time is greater than the expiration time, false otherwise.
+     */
+    isExpired(expiration) {
+      return expiration !== null && Date.now() > expiration;
+    }
+    /**
+     * Cleans up expired items from localStorage. The method iterates over all keys in localStorage,
+     * retrieves the associated item, and removes it if it has expired or if it contains invalid JSON.
+     *
+     * @return void
+     */
+    cleanupExpiredItems() {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key) {
+          const itemStr = localStorage.getItem(key);
+          if (itemStr) {
+            try {
+              const item = JSON.parse(itemStr);
+              if (this.isExpired(item.expiration)) {
+                localStorage.removeItem(key);
+              }
+            } catch (e) {
+              console.warn(`Invalid JSON data for key "${key}": ${itemStr}`);
+              localStorage.removeItem(key);
+            }
+          }
+        }
+      }
+    }
+    /**
+     * Finds and returns the current value that matches the specified version.
+     *
+     * @param {StoredValue[]} values - An array of stored values to search.
+     * @param {string} version - The target version to find in the stored values.
+     * @return {StoredValue | undefined} The stored value matching the specified version, or undefined if no match is found.
+     */
+    findCurrentValue(values, version) {
+      return values.find((value) => value.version === version);
+    }
+  };
+  /**
+   * LocalStoreX is an instance of a class designed to handle local storage operations.
+   * It provides methods for storing, retrieving, and managing data in the browser's local storage.
+   *
+   * Common use cases include saving user preferences, caching data for offline use,
+   * and persisting application state between sessions.
+   */
+  __publicField(_LocalStoreX, "instance");
+  /**
+   * A default instance of ObjectVersionHelper which implements the IObjectVersionHelper interface.
+   * This instance is commonly used to manage versioning of objects where version control is required.
+   * It provides necessary methods to handle version-related operations seamlessly.
+   */
+  __publicField(_LocalStoreX, "defaultVersionHelper", new ObjectVersionHelper());
+  let LocalStoreX = _LocalStoreX;
+  exports2.LocalStoreX = LocalStoreX;
+  exports2.ObjectVersionHelper = ObjectVersionHelper;
+  Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
+});
+//# sourceMappingURL=localstorex.umd.js.map

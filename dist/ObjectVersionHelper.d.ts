@@ -29,5 +29,5 @@ export default class ObjectVersionHelper implements IObjectVersionHelper {
      * @param {any} obj - The object or array to be sorted.
      * @return {any} - The sorted object or array.
      */
-    private sortObject;
+    private getSortedKeys;
 }

@@ -18,10 +18,11 @@
     "vite-plugin-dts": "^4.3.0"
   },
   "dependencies": {
-    "md5": "^2.3.0"
+    "md5": "^2.3.0",
+    "@types/md5": "^2.3.5"
   },
   "resolutions": {
-    "@types/md5": "^2.3.5",
+
     "rollup": "npm:@rollup/wasm-node"
   }
 }
