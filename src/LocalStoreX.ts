@@ -1,6 +1,7 @@
 import ObjectVersionHelper from './ObjectVersionHelper';
 import IObjectVersionHelper from './type/IObjectVersionHelper';
-import { IStorageItem,  StoredValue } from './type/IStorageItem';
+import { IStorageItem } from './type/IStorageItem';
+import { isIStorageItem } from './type/typeGuards';
 
 export default class LocalStoreX {
     /**
@@ -76,8 +77,8 @@ export default class LocalStoreX {
             return null;
         }
 
-        const currentValue = this.findCurrentValue(item.values, version ?? item.currentVersion);
-        return currentValue ? currentValue.data : null;
+        const currentValue = item.values[version ?? item.currentVersion];
+        return currentValue ? currentValue : null;
     }
     /**
      * Removes an item from the local storage based on the specified key.
@@ -109,12 +110,12 @@ export default class LocalStoreX {
         const item: IStorageItem | null = this.getExistingItem(key);
         if (!item) return;
 
-        item.values = item.values.filter(value => value.version !== version);
+        delete item.values[version];
 
-        if (item.values.length === 0) {
+        if (Object.keys(item.values).length === 0) {
             localStorage.removeItem(key);
         } else {
-            item.currentVersion = item.values[item.values.length - 1].version;
+            item.currentVersion = Object.keys(item.values)[Object.keys(item.values).length - 1];
             localStorage.setItem(key, JSON.stringify(item));
         }
     }
@@ -127,39 +128,50 @@ export default class LocalStoreX {
      */
     private getExistingItem(key: string): IStorageItem | null {
         const itemStr = localStorage.getItem(key);
-        return itemStr ? JSON.parse(itemStr) : null;
+        if (!itemStr) return null;
+
+        try {
+            const item = JSON.parse(itemStr);
+
+            if (isIStorageItem(item)) {
+                return item;
+            } else {
+                console.warn(`Invalid structure for key "${key}":`, item);
+                return null;
+            }
+        } catch (e) {
+            console.warn(`Error parsing JSON for key "${key}":`, e);
+            return null;
+        }
     }
 
     /**
-     * Creates a new storage item with the specified version and optional expiration time.
+     * Creates a new storage item with the given version and optional expiration time.
      *
-     * @param {string} version - The current version of the item.
-     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration date will be set.
+     * @param {string} version - The version of the new storage item.
+     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
+     *                                is set to the current time plus the specified hours.
      * @return {IStorageItem} The newly created storage item.
      */
     private createNewItem(version: string, expiration?: number): IStorageItem {
         return {
             currentVersion: version,
             expiration: expiration ? Date.now() + expiration * 3600000 : null,
-            values: []
+            values: {}
         };
     }
 
     /**
-     * Updates an existing value or adds a new value to the storage item.
+     * Updates the value associated with a specified version in a storage item.
+     * If the version does not already exist, it will be added.
      *
-     * @param {IStorageItem} item - The storage item containing values.
-     * @param {string} version - The version identifier for the value.
-     * @param {any} data - The data to be associated with the specified version.
+     * @param {IStorageItem} item - The storage item to update or add a value to.
+     * @param {string} version - The version identifier to update or add.
+     * @param {any} data - The data to associate with the specified version.
      * @return {void}
      */
     private updateOrAddValue(item: IStorageItem, version: string, data: any) {
-        const existingValue = item.values.find(value => value.version === version);
-        if (existingValue) {
-            existingValue.data = data;
-        } else {
-            item.values.push({ version, data });
-        }
+        item.values[version] = data;
     }
 
     /**
@@ -227,16 +239,5 @@ export default class LocalStoreX {
                 }
             }
         }
-    }
-
-    /**
-     * Finds and returns the current value that matches the specified version.
-     *
-     * @param {StoredValue[]} values - An array of stored values to search.
-     * @param {string} version - The target version to find in the stored values.
-     * @return {StoredValue | undefined} The stored value matching the specified version, or undefined if no match is found.
-     */
-    private findCurrentValue(values: StoredValue[], version: string): StoredValue | undefined {
-        return values.find(value => value.version === version);
     }
 }

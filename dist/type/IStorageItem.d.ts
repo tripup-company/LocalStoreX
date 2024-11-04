@@ -5,22 +5,19 @@
  *
  * @property {string} currentVersion - The current version identifier of the storage item.
  * @property {number | null} expiration - The Unix timestamp representing the expiration time of the storage item. If null, the item does not expire.
- * @property {StoredValue[]} values - An array of stored values within the storage item.
- */
+ * @property {Record<string, IStoredValue>} values - An object where the key is the version and the value is the data for that version. */
 export interface IStorageItem {
     currentVersion: string;
     expiration: number | null;
-    values: StoredValue[];
+    values: Record<string, IStoredValue>;
 }
 /**
- * The StoredValue interface represents a generic structure for storing a version and associated data.
+ * An interface representing a stored value with versioning.
  *
- * @interface
- *
- * @property {string} version - A string representing the version of the stored value.
- * @property {any} data - A generic placeholder for the data associated with this stored value.
+ * This interface allows the definition of an object where the keys
+ * are version strings, and the values can be of any type. It is useful
+ * for maintaining different versions of a value or settings.
  */
-export interface StoredValue {
-    version: string;
-    data: any;
+export interface IStoredValue {
+    [version: string]: any;
 }

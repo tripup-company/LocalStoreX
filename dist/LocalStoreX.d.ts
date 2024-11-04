@@ -47,7 +47,7 @@ export default class LocalStoreX {
      * @param {string} [version] - Optional version to retrieve a specific version of the item.
      * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
      */
-    getItem(key: string, version?: string): any;
+    getItem(key: string, version?: string): import('./type/IStorageItem').IStoredValue | null;
     /**
      * Removes an item from the local storage based on the specified key.
      *
@@ -77,19 +77,21 @@ export default class LocalStoreX {
      */
     private getExistingItem;
     /**
-     * Creates a new storage item with the specified version and optional expiration time.
+     * Creates a new storage item with the given version and optional expiration time.
      *
-     * @param {string} version - The current version of the item.
-     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration date will be set.
+     * @param {string} version - The version of the new storage item.
+     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
+     *                                is set to the current time plus the specified hours.
      * @return {IStorageItem} The newly created storage item.
      */
     private createNewItem;
     /**
-     * Updates an existing value or adds a new value to the storage item.
+     * Updates the value associated with a specified version in a storage item.
+     * If the version does not already exist, it will be added.
      *
-     * @param {IStorageItem} item - The storage item containing values.
-     * @param {string} version - The version identifier for the value.
-     * @param {any} data - The data to be associated with the specified version.
+     * @param {IStorageItem} item - The storage item to update or add a value to.
+     * @param {string} version - The version identifier to update or add.
+     * @param {any} data - The data to associate with the specified version.
      * @return {void}
      */
     private updateOrAddValue;
@@ -125,12 +127,4 @@ export default class LocalStoreX {
      * @return void
      */
     private cleanupExpiredItems;
-    /**
-     * Finds and returns the current value that matches the specified version.
-     *
-     * @param {StoredValue[]} values - An array of stored values to search.
-     * @param {string} version - The target version to find in the stored values.
-     * @return {StoredValue | undefined} The stored value matching the specified version, or undefined if no match is found.
-     */
-    private findCurrentValue;
 }

@@ -1,6 +1,3 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -246,16 +243,12 @@ var md5Exports = md5$1.exports;
 const md5 = /* @__PURE__ */ getDefaultExportFromCjs(md5Exports);
 class ObjectVersionHelper {
   constructor() {
-    /**
-     * Indicates whether a certain operation should be performed in a deep or shallow manner.
-     *
-     * When set to `true`, the operation will be performed deeply, which typically means
-     * that nested structures will also be traversed or processed.
-     *
-     * When set to `false`, the operation will be shallow, affecting only the top-level
-     * elements.
-     */
-    __publicField(this, "isDeep", false);
+    Object.defineProperty(this, "isDeep", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: false
+    });
   }
   /**
    * Sets the deep sorting flag.
@@ -307,7 +300,13 @@ class ObjectVersionHelper {
     return [];
   }
 }
-const _LocalStoreX = class _LocalStoreX {
+function isStoredValue(obj) {
+  return obj && typeof obj === "object" && !Array.isArray(obj);
+}
+function isIStorageItem(obj) {
+  return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object" && Object.values(obj.values).every(isStoredValue);
+}
+class LocalStoreX {
   /**
    * Constructor for initializing the object with a version helper and performing cleanup of expired items.
    *
@@ -315,8 +314,13 @@ const _LocalStoreX = class _LocalStoreX {
    *
    * @return {void}
    */
-  constructor(objectVersionHelper = _LocalStoreX.defaultVersionHelper) {
-    this.objectVersionHelper = objectVersionHelper;
+  constructor(objectVersionHelper = LocalStoreX.defaultVersionHelper) {
+    Object.defineProperty(this, "objectVersionHelper", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: objectVersionHelper
+    });
     this.cleanupExpiredItems();
   }
   /**
@@ -326,10 +330,10 @@ const _LocalStoreX = class _LocalStoreX {
    * @return {LocalStoreX} The singleton instance of LocalStoreX.
    */
   static getInstance() {
-    if (!_LocalStoreX.instance) {
-      _LocalStoreX.instance = new _LocalStoreX();
+    if (!LocalStoreX.instance) {
+      LocalStoreX.instance = new LocalStoreX();
     }
-    return _LocalStoreX.instance;
+    return LocalStoreX.instance;
   }
   /**
    * Stores an item in the local storage with the specified key, data, and optional version and expiration.
@@ -360,8 +364,8 @@ const _LocalStoreX = class _LocalStoreX {
       localStorage.removeItem(key);
       return null;
     }
-    const currentValue = this.findCurrentValue(item.values, version ?? item.currentVersion);
-    return currentValue ? currentValue.data : null;
+    const currentValue = item.values[version ?? item.currentVersion];
+    return currentValue ? currentValue : null;
   }
   /**
    * Removes an item from the local storage based on the specified key.
@@ -389,12 +393,13 @@ const _LocalStoreX = class _LocalStoreX {
    */
   removeVersionItem(key, version) {
     const item = this.getExistingItem(key);
-    if (!item) return;
-    item.values = item.values.filter((value) => value.version !== version);
-    if (item.values.length === 0) {
+    if (!item)
+      return;
+    delete item.values[version];
+    if (Object.keys(item.values).length === 0) {
       localStorage.removeItem(key);
     } else {
-      item.currentVersion = item.values[item.values.length - 1].version;
+      item.currentVersion = Object.keys(item.values)[Object.keys(item.values).length - 1];
       localStorage.setItem(key, JSON.stringify(item));
     }
   }
@@ -406,37 +411,47 @@ const _LocalStoreX = class _LocalStoreX {
    */
   getExistingItem(key) {
     const itemStr = localStorage.getItem(key);
-    return itemStr ? JSON.parse(itemStr) : null;
+    if (!itemStr)
+      return null;
+    try {
+      const item = JSON.parse(itemStr);
+      if (isIStorageItem(item)) {
+        return item;
+      } else {
+        console.warn(`Invalid structure for key "${key}":`, item);
+        return null;
+      }
+    } catch (e) {
+      console.warn(`Error parsing JSON for key "${key}":`, e);
+      return null;
+    }
   }
   /**
-   * Creates a new storage item with the specified version and optional expiration time.
+   * Creates a new storage item with the given version and optional expiration time.
    *
-   * @param {string} version - The current version of the item.
-   * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration date will be set.
+   * @param {string} version - The version of the new storage item.
+   * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
+   *                                is set to the current time plus the specified hours.
    * @return {IStorageItem} The newly created storage item.
    */
   createNewItem(version, expiration) {
     return {
       currentVersion: version,
       expiration: expiration ? Date.now() + expiration * 36e5 : null,
-      values: []
+      values: {}
     };
   }
   /**
-   * Updates an existing value or adds a new value to the storage item.
+   * Updates the value associated with a specified version in a storage item.
+   * If the version does not already exist, it will be added.
    *
-   * @param {IStorageItem} item - The storage item containing values.
-   * @param {string} version - The version identifier for the value.
-   * @param {any} data - The data to be associated with the specified version.
+   * @param {IStorageItem} item - The storage item to update or add a value to.
+   * @param {string} version - The version identifier to update or add.
+   * @param {any} data - The data to associate with the specified version.
    * @return {void}
    */
   updateOrAddValue(item, version, data) {
-    const existingValue = item.values.find((value) => value.version === version);
-    if (existingValue) {
-      existingValue.data = data;
-    } else {
-      item.values.push({ version, data });
-    }
+    item.values[version] = data;
   }
   /**
    * Updates the current version and expiration time of the given storage item.
@@ -501,32 +516,13 @@ const _LocalStoreX = class _LocalStoreX {
       }
     }
   }
-  /**
-   * Finds and returns the current value that matches the specified version.
-   *
-   * @param {StoredValue[]} values - An array of stored values to search.
-   * @param {string} version - The target version to find in the stored values.
-   * @return {StoredValue | undefined} The stored value matching the specified version, or undefined if no match is found.
-   */
-  findCurrentValue(values, version) {
-    return values.find((value) => value.version === version);
-  }
-};
-/**
- * LocalStoreX is an instance of a class designed to handle local storage operations.
- * It provides methods for storing, retrieving, and managing data in the browser's local storage.
- *
- * Common use cases include saving user preferences, caching data for offline use,
- * and persisting application state between sessions.
- */
-__publicField(_LocalStoreX, "instance");
-/**
- * A default instance of ObjectVersionHelper which implements the IObjectVersionHelper interface.
- * This instance is commonly used to manage versioning of objects where version control is required.
- * It provides necessary methods to handle version-related operations seamlessly.
- */
-__publicField(_LocalStoreX, "defaultVersionHelper", new ObjectVersionHelper());
-let LocalStoreX = _LocalStoreX;
+}
+Object.defineProperty(LocalStoreX, "defaultVersionHelper", {
+  enumerable: true,
+  configurable: true,
+  writable: true,
+  value: new ObjectVersionHelper()
+});
 export {
   LocalStoreX,
   ObjectVersionHelper
