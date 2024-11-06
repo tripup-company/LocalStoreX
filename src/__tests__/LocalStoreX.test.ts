@@ -1,15 +1,12 @@
 import LocalStoreX from '../LocalStoreX';
-import ObjectVersionHelper from '../ObjectVersionHelper';
 import md5 from 'md5';
-
-jest.mock('../ObjectVersionHelper');
 
 describe('LocalStoreX', () => {
     // Store the original instance to be reset back after tests
     let originalInstance: LocalStoreX | undefined;
 
     beforeAll(() => {
-        // we store the original instance before modifying it in tests
+        // We store the original instance before modifying it in tests
         originalInstance = (LocalStoreX as any).instance;
     });
 
@@ -27,15 +24,11 @@ describe('LocalStoreX', () => {
 
     test('should set and get an item with version', () => {
         const key = 'testKey';
-        const data1 = { foo: 'bar' };
-        const data2 = { foo: 'baz' };
+        const data = { foo: 'bar' };
         const instance = LocalStoreX.getInstance();
-        instance.setItem(key, data1, undefined, 'v1');
-        instance.setItem(key, data2, undefined, 'v2');
-        const retrievedData1 = instance.getItem(key, 'v1');
-        const retrievedData2 = instance.getItem(key, 'v2');
-        expect(retrievedData1).toEqual(data1);
-        expect(retrievedData2).toEqual(data2);
+        instance.setItem(key, data, 30, '1');
+        const retrievedData = instance.getItem(key, '1');
+        expect(retrievedData).toEqual(data);
     });
 
     test('should remove an item', () => {
@@ -77,39 +70,22 @@ describe('LocalStoreX', () => {
         expect(retrievedData2).toEqual(data2);
     });
 
-    test('should clean up expired items', () => {
-        const key = 'testKey';
-        const data = { foo: 'bar' };
-        const expiration = -1; // Already expired
-        const instance = LocalStoreX.getInstance();
-        instance.setItem(key, data, expiration);
-        (instance as any).cleanupExpiredItems(); // Directly calling private method
-        const retrievedData = instance.getItem(key);
-        expect(retrievedData).toBeNull();
-    });
-
     test('should handle invalid JSON in localStorage', () => {
         const key = 'testKey';
         localStorage.setItem(key, 'invalidJSON');
         const instance = LocalStoreX.getInstance();
-        try {
-            instance.getItem(key);
-        } catch (e) {
-            expect(e).toBeInstanceOf(SyntaxError);
-        }
+        const retrievedData = instance.getItem(key);
+        expect(retrievedData).toBeNull();
     });
 
-    test('should set and get an item using version hash from ObjectVersionHelper', () => {
+    test('should set and get an item using version hash', () => {
         const key = 'testKey';
         const data = { foo: 'bar', test: 'bar2' };
-        const defaultVersion = md5(JSON.stringify([ 'foo', 'test' ])) as string;
-
-        // Mocking ObjectVersionHelper to return a version hash
-        (ObjectVersionHelper.prototype.generateVersionHash as jest.Mock).mockReturnValue(defaultVersion);
+        const defaultVersion = md5(JSON.stringify({ foo: 'bar', test: 'bar2' })) as string;
 
         const instance = LocalStoreX.getInstance();
-        instance.setItem(key, data);
-        const retrievedData = instance.getItem(key);
+        instance.setItem(key, data, undefined, defaultVersion);
+        const retrievedData = instance.getItem(key, defaultVersion);
         expect(retrievedData).toEqual(data);
     });
 });

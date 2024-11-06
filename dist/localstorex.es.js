@@ -1,3 +1,171 @@
+function isStoredValue(obj) {
+  return obj && typeof obj === "object";
+}
+function isIStorageItem(obj) {
+  return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object" && Object.values(obj.values).every(isStoredValue);
+}
+class LocalStoreX {
+  /**
+   * Constructor for initializing the object with a version helper and an optional default expiration time.
+   * Also performs cleanup of expired items.
+   *
+   * @param {string} defaultVersion - An instance used to manage versioning of objects.
+   * @param {number} [defaultExpiration=null] - The default expiration time for items in hours.
+   *
+   * @return {void}
+   */
+  constructor(defaultVersion = "v1", defaultExpiration = null) {
+    Object.defineProperty(this, "defaultVersion", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: defaultVersion
+    });
+    Object.defineProperty(this, "defaultExpiration", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: defaultExpiration
+    });
+  }
+  /**
+   * Returns a singleton instance of the LocalStoreX class.
+   * If one does not already exist, it creates one with the provided configuration.
+   *
+   * @param {Object} [config] - Optional configuration object.
+   * @param {string} [config.defaultVersion='v1'] - Specifies the default version for the instance.
+   * @param {null} [config.defaultExpiration=null] - Specifies the default expiration for the instance.
+   * @return {LocalStoreX} The singleton instance of the LocalStoreX class.
+   */
+  static getInstance(config) {
+    if (!LocalStoreX.instance) {
+      const expiration = (config == null ? void 0 : config.defaultExpiration) ?? null;
+      const version = (config == null ? void 0 : config.defaultVersion) ?? "v1";
+      LocalStoreX.instance = new LocalStoreX(version, expiration);
+    }
+    return LocalStoreX.instance;
+  }
+  /**
+   * Stores an item in the local storage with the specified key, data, and optional version and expiration.
+   *
+   * @param {string} key - The key under which the data will be stored.
+   * @param {any} data - The data to be stored.
+   * @param {number} [expiration] - Optional expiration time for the data in milliseconds.
+   * @param {string | number} [providedVersion] - Optional version information for the data.* @return {void}
+   */
+  setItem(key, data, expiration, providedVersion) {
+    const item = this.getExistingItem(key) ?? this.createNewItem(expiration, providedVersion);
+    this.updateOrAddValue(item, data, expiration, providedVersion);
+    localStorage.setItem(key, JSON.stringify(item));
+  }
+  /**
+   * Retrieves an item from storage by its key and optional version.
+   *
+   * @param {string} key - The key of the item to retrieve.
+   * @param {string} [version] - Optional version to retrieve a specific version of the item.
+   * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
+   */
+  getItem(key, version) {
+    const item = this.getExistingItem(key);
+    if (!item || this.isExpired(item.expiration)) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    const currentValue = item.values[version ?? this.defaultVersion];
+    return currentValue ? currentValue : null;
+  }
+  /**
+   * Removes an item from the local storage based on the specified key.
+   *
+   * @param {string} key - The key of the item to be removed from local storage.
+   * @return {void} No return value.
+   */
+  removeItem(key) {
+    localStorage.removeItem(key);
+  }
+  /**
+   * Clears all key-value pairs stored in the local storage.
+   *
+   * @return {void} - No return value.
+   */
+  clear() {
+    localStorage.clear();
+  }
+  /**
+   * Removes a specific version entry associated with the given key from storage.
+   *
+   * @param {string} key - The key associated with the item in storage.
+   * @param {string} version - The version of the item to be removed.
+   * @return {void}
+   */
+  removeVersionItem(key, version) {
+    const item = this.getExistingItem(key);
+    if (!item)
+      return;
+    delete item.values[version];
+    if (Object.keys(item.values).length === 0) {
+      localStorage.removeItem(key);
+    } else {
+      item.currentVersion = Object.keys(item.values)[Object.keys(item.values).length - 1];
+      localStorage.setItem(key, JSON.stringify(item));
+    }
+  }
+  /**
+   * Retrieves an existing item from local storage.
+   *
+   * @param {string} key - The key under which the item is stored.
+   * @return {IStorageItem | null} The parsed item if found, otherwise null.
+   */
+  getExistingItem(key) {
+    try {
+      const item = JSON.parse(localStorage.getItem(key) || "");
+      return isIStorageItem(item) ? item : null;
+    } catch {
+      console.warn(`Error parsing JSON for key "${key}"`);
+      return null;
+    }
+  }
+  /**
+   * Creates a new storage item with the given version and optional expiration time.
+   *
+   * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
+   * @param {string} [version] - The version of the new storage item.
+   *                                is set to the current time plus the specified hours.
+   * @return {IStorageItem} The newly created storage item.
+   */
+  createNewItem(expiration, version) {
+    return {
+      currentVersion: version ?? this.defaultVersion,
+      expiration: expiration ? Date.now() + expiration * 36e5 : this.defaultExpiration,
+      values: {}
+    };
+  }
+  /**
+   * Updates the specified storage item with a new version and optional expiration. If the item does not
+   * exist, it is added with the provided data.
+   *
+   * @param {IStorageItem} item - The storage item to be updated or added.
+   * @param {string} version - The version identifier for the new data.
+   * @param {any} data - The data to be stored in the specified version.
+   * @param {number} [expiration] - Optional expiration time in hours. If not provided, the existing expiration remains.
+   *
+   * @return {void}
+   */
+  updateOrAddValue(item, data, expiration, version) {
+    item.currentVersion = version ?? item.currentVersion;
+    item.expiration = expiration ? Date.now() + expiration * 36e5 : item.expiration;
+    item.values[version ?? item.currentVersion] = data;
+  }
+  /**
+   * Checks whether the given expiration timestamp has passed.
+   *
+   * @param {number | null} expiration - The timestamp to check for expiration, or null to indicate no expiration.
+   * @return {boolean} Returns true if the current time is greater than the expiration time, false otherwise.
+   */
+  isExpired(expiration) {
+    return expiration !== null && Date.now() > expiration;
+  }
+}
 function getDefaultExportFromCjs(x) {
   return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
 }
@@ -242,41 +410,28 @@ function isSlowBuffer(obj) {
 var md5Exports = md5$1.exports;
 const md5 = /* @__PURE__ */ getDefaultExportFromCjs(md5Exports);
 class ObjectVersionHelper {
-  constructor() {
-    Object.defineProperty(this, "isDeep", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: false
-    });
-  }
-  /**
-   * Sets the deep sorting flag.
-   *
-   * @param {boolean} isDeep - Indicates whether the sorting of the object should be deep.
-   */
-  setDeepTraversal(isDeep) {
-    this.isDeep = isDeep;
-  }
   /**
    * Generates a version hash for the given data.
    *
-   * @param {any} data - The data for which the version hash is to be created.
-   * @return {string} A hash string representing the version of the data.
+   * @param {any} data - The data for which the version hash needs to be generated.
+   * @param {boolean} [isDeep=false] - Flag indicating whether to sort keys deeply or not.
+   * @return {string} The generated version hash.
    */
-  generateVersionHash(data) {
-    const sortedData = this.getSortedKeys(data);
+  static generateVersionHash(data, isDeep = false) {
+    const sortedData = this.getSortedKeys(data, isDeep);
     return md5(JSON.stringify(sortedData));
   }
   /**
-   * Recursively sorts the keys of an object or array.
+   * Returns a sorted mapping of keys and their corresponding sub-keys for a given object or array.
+   * If `isDeep` is true, the method recursively sorts the keys of nested objects.
    *
-   * @param {any} obj - The object or array to be sorted.
-   * @return {any} - The sorted object or array.
+   * @param {any} obj - The input object or array whose keys need to be sorted.
+   * @param {boolean} [isDeep=false] - Optional flag to indicate if the sorting should be performed recursively.
+   * @return {any} A new object or array with sorted keys and their corresponding (sub-)keys.
    */
-  getSortedKeys(obj) {
+  static getSortedKeys(obj, isDeep = false) {
     if (Array.isArray(obj)) {
-      return obj.map((item) => this.getSortedKeys(item)).reduce((acc, val) => {
+      return obj.map((item) => this.getSortedKeys(item, isDeep)).reduce((acc, val) => {
         if (typeof val === "object" && !Array.isArray(val)) {
           for (const key in val) {
             acc[key] = acc[key] ? [...acc[key], ...val[key]] : val[key];
@@ -289,8 +444,8 @@ class ObjectVersionHelper {
       const keys = Object.keys(obj).sort();
       keys.forEach((key) => {
         const value = obj[key];
-        if (this.isDeep && typeof value === "object" && value !== null) {
-          result[key] = this.getSortedKeys(value);
+        if (isDeep && typeof value === "object" && value !== null) {
+          result[key] = this.getSortedKeys(value, isDeep);
         } else {
           result[key] = [];
         }
@@ -300,229 +455,6 @@ class ObjectVersionHelper {
     return [];
   }
 }
-function isStoredValue(obj) {
-  return obj && typeof obj === "object" && !Array.isArray(obj);
-}
-function isIStorageItem(obj) {
-  return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object" && Object.values(obj.values).every(isStoredValue);
-}
-class LocalStoreX {
-  /**
-   * Constructor for initializing the object with a version helper and performing cleanup of expired items.
-   *
-   * @param {IObjectVersionHelper} objectVersionHelper - An instance used to manage versioning of objects.
-   *
-   * @return {void}
-   */
-  constructor(objectVersionHelper = LocalStoreX.defaultVersionHelper) {
-    Object.defineProperty(this, "objectVersionHelper", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: objectVersionHelper
-    });
-    this.cleanupExpiredItems();
-  }
-  /**
-   * Retrieves the singleton instance of the LocalStoreX class.
-   * If no instance exists, a new one will be created.
-   *
-   * @return {LocalStoreX} The singleton instance of LocalStoreX.
-   */
-  static getInstance() {
-    if (!LocalStoreX.instance) {
-      LocalStoreX.instance = new LocalStoreX();
-    }
-    return LocalStoreX.instance;
-  }
-  /**
-   * Stores an item in the local storage with the specified key, data, and optional version and expiration.
-   *
-   * @param {string} key - The key under which the data will be stored.
-   * @param {any} data - The data to be stored.
-   * @param {number} [expiration] - Optional expiration time for the data in milliseconds.
-   * @param {string | IObjectVersionHelper} [providedVersion] - Optional version information for the data.
-   * @return {void}
-   */
-  setItem(key, data, expiration, providedVersion) {
-    const version = this.getVersion(data, providedVersion);
-    const item = this.getExistingItem(key) ?? this.createNewItem(version, expiration);
-    this.updateOrAddValue(item, version, data);
-    this.updateCurrentVersion(item, version, expiration);
-    localStorage.setItem(key, JSON.stringify(item));
-  }
-  /**
-   * Retrieves an item from storage by its key and optional version.
-   *
-   * @param {string} key - The key of the item to retrieve.
-   * @param {string} [version] - Optional version to retrieve a specific version of the item.
-   * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
-   */
-  getItem(key, version) {
-    const item = this.getExistingItem(key);
-    if (!item || this.isExpired(item.expiration)) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    const currentValue = item.values[version ?? item.currentVersion];
-    return currentValue ? currentValue : null;
-  }
-  /**
-   * Removes an item from the local storage based on the specified key.
-   *
-   * @param {string} key - The key of the item to be removed from local storage.
-   * @return {void} No return value.
-   */
-  removeItem(key) {
-    localStorage.removeItem(key);
-  }
-  /**
-   * Clears all key-value pairs stored in the local storage.
-   *
-   * @return {void} - No return value.
-   */
-  clear() {
-    localStorage.clear();
-  }
-  /**
-   * Removes a specific version entry associated with the given key from storage.
-   *
-   * @param {string} key - The key associated with the item in storage.
-   * @param {string} version - The version of the item to be removed.
-   * @return {void}
-   */
-  removeVersionItem(key, version) {
-    const item = this.getExistingItem(key);
-    if (!item)
-      return;
-    delete item.values[version];
-    if (Object.keys(item.values).length === 0) {
-      localStorage.removeItem(key);
-    } else {
-      item.currentVersion = Object.keys(item.values)[Object.keys(item.values).length - 1];
-      localStorage.setItem(key, JSON.stringify(item));
-    }
-  }
-  /**
-   * Retrieves an existing item from local storage.
-   *
-   * @param {string} key - The key under which the item is stored.
-   * @return {IStorageItem | null} The parsed item if found, otherwise null.
-   */
-  getExistingItem(key) {
-    const itemStr = localStorage.getItem(key);
-    if (!itemStr)
-      return null;
-    try {
-      const item = JSON.parse(itemStr);
-      if (isIStorageItem(item)) {
-        return item;
-      } else {
-        console.warn(`Invalid structure for key "${key}":`, item);
-        return null;
-      }
-    } catch (e) {
-      console.warn(`Error parsing JSON for key "${key}":`, e);
-      return null;
-    }
-  }
-  /**
-   * Creates a new storage item with the given version and optional expiration time.
-   *
-   * @param {string} version - The version of the new storage item.
-   * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
-   *                                is set to the current time plus the specified hours.
-   * @return {IStorageItem} The newly created storage item.
-   */
-  createNewItem(version, expiration) {
-    return {
-      currentVersion: version,
-      expiration: expiration ? Date.now() + expiration * 36e5 : null,
-      values: {}
-    };
-  }
-  /**
-   * Updates the value associated with a specified version in a storage item.
-   * If the version does not already exist, it will be added.
-   *
-   * @param {IStorageItem} item - The storage item to update or add a value to.
-   * @param {string} version - The version identifier to update or add.
-   * @param {any} data - The data to associate with the specified version.
-   * @return {void}
-   */
-  updateOrAddValue(item, version, data) {
-    item.values[version] = data;
-  }
-  /**
-   * Updates the current version and expiration time of the given storage item.
-   *
-   * @param {IStorageItem} item - The storage item to update.
-   * @param {string} version - The new version to set for the storage item.
-   * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration time is updated.
-   *
-   * @return {void}
-   */
-  updateCurrentVersion(item, version, expiration) {
-    item.currentVersion = version;
-    item.expiration = expiration ? Date.now() + expiration * 36e5 : item.expiration;
-  }
-  /**
-   * Retrieves the version string based on the provided value and optional version information.
-   *
-   * @param {any} value - The value to generate or retrieve the version for.
-   * @param {string | IObjectVersionHelper} [providedVersion] - Optional version information provided either as a string or an instance of IObjectVersionHelper.
-   * @return {string} The generated or provided version string.
-   */
-  getVersion(value, providedVersion) {
-    if (typeof providedVersion === "string") {
-      return providedVersion;
-    } else if (providedVersion instanceof ObjectVersionHelper) {
-      return providedVersion.generateVersionHash(value);
-    } else {
-      return this.objectVersionHelper.generateVersionHash(value);
-    }
-  }
-  /**
-   * Checks whether the given expiration timestamp has passed.
-   *
-   * @param {number | null} expiration - The timestamp to check for expiration, or null to indicate no expiration.
-   * @return {boolean} Returns true if the current time is greater than the expiration time, false otherwise.
-   */
-  isExpired(expiration) {
-    return expiration !== null && Date.now() > expiration;
-  }
-  /**
-   * Cleans up expired items from localStorage. The method iterates over all keys in localStorage,
-   * retrieves the associated item, and removes it if it has expired or if it contains invalid JSON.
-   *
-   * @return void
-   */
-  cleanupExpiredItems() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        const itemStr = localStorage.getItem(key);
-        if (itemStr) {
-          try {
-            const item = JSON.parse(itemStr);
-            if (this.isExpired(item.expiration)) {
-              localStorage.removeItem(key);
-            }
-          } catch (e) {
-            console.warn(`Invalid JSON data for key "${key}": ${itemStr}`);
-            localStorage.removeItem(key);
-          }
-        }
-      }
-    }
-  }
-}
-Object.defineProperty(LocalStoreX, "defaultVersionHelper", {
-  enumerable: true,
-  configurable: true,
-  writable: true,
-  value: new ObjectVersionHelper()
-});
 export {
   LocalStoreX,
   ObjectVersionHelper

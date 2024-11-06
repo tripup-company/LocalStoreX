@@ -1,4 +1,4 @@
-import { IStorageItem, IStoredValue } from './IStorageItem';
+import { IStorageItem } from './IStorageItem';
 
 /**
  * Checks if the given object is a stored value.
@@ -6,8 +6,8 @@ import { IStorageItem, IStoredValue } from './IStorageItem';
  * @param {any} obj - The object to be checked.
  * @return {boolean} - Returns true if the object is a stored value, otherwise false.
  */
-export function isStoredValue(obj: any): obj is IStoredValue {
-    return obj && typeof obj === 'object' && !Array.isArray(obj);
+export function isStoredValue(obj: any): obj is Record<string, any> {
+    return obj && typeof obj === 'object';
 }
 
 /**

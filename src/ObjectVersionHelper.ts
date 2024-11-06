@@ -1,47 +1,30 @@
 import md5 from 'md5';
-import IObjectVersionHelper from "./type/IObjectVersionHelper";
 
-export default class ObjectVersionHelper implements IObjectVersionHelper {
-    /**
-     * Indicates whether a certain operation should be performed in a deep or shallow manner.
-     *
-     * When set to `true`, the operation will be performed deeply, which typically means
-     * that nested structures will also be traversed or processed.
-     *
-     * When set to `false`, the operation will be shallow, affecting only the top-level
-     * elements.
-     */
-    private isDeep: boolean = false;
-
-    /**
-     * Sets the deep sorting flag.
-     *
-     * @param {boolean} isDeep - Indicates whether the sorting of the object should be deep.
-     */
-    setDeepTraversal(isDeep: boolean): void {
-        this.isDeep = isDeep;
-    }
+export default class ObjectVersionHelper {
 
     /**
      * Generates a version hash for the given data.
      *
-     * @param {any} data - The data for which the version hash is to be created.
-     * @return {string} A hash string representing the version of the data.
+     * @param {any} data - The data for which the version hash needs to be generated.
+     * @param {boolean} [isDeep=false] - Flag indicating whether to sort keys deeply or not.
+     * @return {string} The generated version hash.
      */
-    generateVersionHash(data: any): string {
-        const sortedData = this.getSortedKeys(data);
+    static generateVersionHash(data: any, isDeep: boolean = false): string {
+        const sortedData = this.getSortedKeys(data, isDeep);
         return md5(JSON.stringify(sortedData)) as string;
     }
 
     /**
-     * Recursively sorts the keys of an object or array.
+     * Returns a sorted mapping of keys and their corresponding sub-keys for a given object or array.
+     * If `isDeep` is true, the method recursively sorts the keys of nested objects.
      *
-     * @param {any} obj - The object or array to be sorted.
-     * @return {any} - The sorted object or array.
+     * @param {any} obj - The input object or array whose keys need to be sorted.
+     * @param {boolean} [isDeep=false] - Optional flag to indicate if the sorting should be performed recursively.
+     * @return {any} A new object or array with sorted keys and their corresponding (sub-)keys.
      */
-    private getSortedKeys(obj: any): any {
+    private static getSortedKeys(obj: any, isDeep: boolean = false): any {
         if (Array.isArray(obj)) {
-            return obj.map(item => this.getSortedKeys(item)).reduce((acc, val) => {
+            return obj.map(item => this.getSortedKeys(item, isDeep)).reduce((acc, val) => {
                 if (typeof val === 'object' && !Array.isArray(val)) {
                     for (const key in val) {
                         acc[key] = acc[key] ? [...acc[key], ...val[key]] : val[key];
@@ -56,8 +39,8 @@ export default class ObjectVersionHelper implements IObjectVersionHelper {
             keys.forEach((key: string) => {
                 const value = obj[key];
 
-                if (this.isDeep && typeof value === 'object' && value !== null) {
-                    result[key] = this.getSortedKeys(value);
+                if (isDeep && typeof value === 'object' && value !== null) {
+                    result[key] = this.getSortedKeys(value, isDeep);
                 } else {
                     result[key] = [];
                 }
