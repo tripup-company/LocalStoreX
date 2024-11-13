@@ -1,7 +1,7 @@
 {
   "name": "localstorex",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "./dist/localstorex.umd.js",
   "module": "./dist/localstorex.es.js",
