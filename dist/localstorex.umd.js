@@ -2,11 +2,8 @@
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global.LocalStoreX = {}));
 })(this, function(exports2) {
   "use strict";
-  function isStoredValue(obj) {
-    return obj && typeof obj === "object";
-  }
   function isIStorageItem(obj) {
-    return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object" && Object.values(obj.values).every(isStoredValue);
+    return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object";
   }
   class LocalStoreX {
     /**
