@@ -114,11 +114,14 @@ export default class LocalStoreX {
      */
     getExistingItem(key) {
         try {
-            const item = JSON.parse(localStorage.getItem(key) || '');
-            return isIStorageItem(item) ? item : null;
+            const item = localStorage.getItem(key);
+            if (!item)
+                return null;
+            const parsedItem = JSON.parse(item);
+            return isIStorageItem(parsedItem) ? parsedItem : null;
         }
-        catch {
-            console.warn(`Error parsing JSON for key "${key}"`);
+        catch (error) {
+            console.warn(`Error parsing JSON for key "${key}":`, error);
             return null;
         }
     }
