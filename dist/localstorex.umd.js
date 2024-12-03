@@ -51,7 +51,7 @@
      *
      * @param {string} key - The key under which the data will be stored.
      * @param {any} data - The data to be stored.
-     * @param {number} [expiration] - Optional expiration time for the data in milliseconds.
+     * @param {number} [expiration] - Optional expiration time for the data in seconds.
      * @param {string | number} [providedVersion] - Optional version information for the data.* @return {void}
      */
     setItem(key, data, expiration, providedVersion) {
@@ -132,7 +132,7 @@
     /**
      * Creates a new storage item with the given version and optional expiration time.
      *
-     * @param {number} [expiration] - Optional expiration time in hours. If provided, the expiration
+     * @param {number} [expiration] - Optional expiration time in seconds. If provided, the expiration
      * @param {string} [version] - The version of the new storage item.
      *                                is set to the current time plus the specified hours.
      * @return {IStorageItem} The newly created storage item.
@@ -140,7 +140,7 @@
     createNewItem(expiration, version) {
       return {
         currentVersion: version ?? this.defaultVersion,
-        expiration: expiration ? Date.now() + expiration * 36e5 : this.defaultExpiration,
+        expiration: expiration ? Date.now() + expiration * 1e3 : this.defaultExpiration,
         values: {}
       };
     }
@@ -151,13 +151,13 @@
      * @param {IStorageItem} item - The storage item to be updated or added.
      * @param {string} version - The version identifier for the new data.
      * @param {any} data - The data to be stored in the specified version.
-     * @param {number} [expiration] - Optional expiration time in hours. If not provided, the existing expiration remains.
+     * @param {number} [expiration] - Optional expiration time in seconds. If not provided, the existing expiration remains.
      *
      * @return {void}
      */
     updateOrAddValue(item, data, expiration, version) {
       item.currentVersion = version ?? item.currentVersion;
-      item.expiration = expiration ? Date.now() + expiration * 36e5 : item.expiration;
+      item.expiration = expiration ? Date.now() + expiration * 1e3 : item.expiration;
       item.values[version ?? item.currentVersion] = data;
     }
     /**
