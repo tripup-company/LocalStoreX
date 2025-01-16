@@ -24,7 +24,7 @@ A singleton class that provides methods to interact with `localStorage`.
 
 - **`setItem(key: string, value: any, expiration?: number, providedVersion?: string): void`**
 
-  Stores an item in `localStorage`. The item is assigned a version. If an expiration time (in days) is provided, the item will be considered expired after the specified period. If no expiration time is provided, the item will be stored indefinitely. If no version is provided, the default version `'v1'` will be used.
+  Stores an item in `localStorage`. The item is assigned a version. If an expiration time (in seconds) is provided, the item will be considered expired after the specified period. If no expiration time is provided, the item will be stored indefinitely. If no version is provided, the default version `'v1'` will be used.
 
 - **`getItem(key: string, version?: string): any`**
 
@@ -70,7 +70,7 @@ const store = LocalStoreX.getInstance();
 const data = { some: 'data', nested: { field: 'value' } };
 
 // Store the item with the generated version hash
-store.setItem('key', data, 1, versionHash);
+store.setItem('key', data,  86400, versionHash);
 
 // Retrieve the item
 const retrievedData = store.getItem('key', versionHash);
@@ -86,7 +86,7 @@ This example demonstrates setting an item in `localStorage` with a 1-day expirat
 
 ## Notes
 
-- Expiration times are optional and specified in days. If not provided, items will be stored indefinitely.
+- Expiration times are optional and specified in seconds. If not provided, items will be stored indefinitely.
 - Items are versioned to allow storing multiple versions of the same item under the same key. If no version is provided, the default version `'v1'` will be used.
 - Expired items are automatically cleaned up on access.
 - `ObjectVersionHelper` can be used to generate consistent version hashes for objects based on their structure, making it easier to manage updates and changes.
