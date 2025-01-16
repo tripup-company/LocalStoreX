@@ -7,7 +7,7 @@
 export function isIStorageItem(obj) {
     return obj &&
         typeof obj === 'object' &&
-        typeof obj.currentVersion === 'string' &&
+        typeof obj.version === 'string' &&
         (typeof obj.expiration === 'number' || obj.expiration === null) &&
-        typeof obj.values === 'object';
+        (typeof obj.value === 'object' || obj.value === 'string');
 }

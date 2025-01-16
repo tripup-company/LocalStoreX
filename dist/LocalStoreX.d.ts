@@ -14,7 +14,7 @@ export default class LocalStoreX {
      * Also performs cleanup of expired items.
      *
      * @param {string} defaultVersion - An instance used to manage versioning of objects.
-     * @param {number} [defaultExpiration=null] - The default expiration time for items in hours.
+     * @param {number} [defaultExpiration=null] - The default expiration time for items in seconds.
      *
      * @return {void}
      */
@@ -38,7 +38,8 @@ export default class LocalStoreX {
      * @param {string} key - The key under which the data will be stored.
      * @param {any} data - The data to be stored.
      * @param {number} [expiration] - Optional expiration time for the data in seconds.
-     * @param {string | number} [providedVersion] - Optional version information for the data.* @return {void}
+     * @param {string | number} [providedVersion] - Optional version information for the data.*
+     * @return {void}
      */
     setItem(key: string, data: any, expiration?: number, providedVersion?: string): void;
     /**
@@ -48,7 +49,7 @@ export default class LocalStoreX {
      * @param {string} [version] - Optional version to retrieve a specific version of the item.
      * @return {*} The data stored under the given key and version, or null if the item does not exist or is expired.
      */
-    getItem(key: string, version?: string): any;
+    getItem(key: string, version?: string): Record<string, any> | null;
     /**
      * Removes an item from the local storage based on the specified key.
      *
@@ -63,14 +64,6 @@ export default class LocalStoreX {
      */
     clear(): void;
     /**
-     * Removes a specific version entry associated with the given key from storage.
-     *
-     * @param {string} key - The key associated with the item in storage.
-     * @param {string} version - The version of the item to be removed.
-     * @return {void}
-     */
-    removeVersionItem(key: string, version: string): void;
-    /**
      * Retrieves an existing item from local storage.
      *
      * @param {string} key - The key under which the item is stored.
@@ -80,24 +73,22 @@ export default class LocalStoreX {
     /**
      * Creates a new storage item with the given version and optional expiration time.
      *
+     * @param {any} data - The data to be stored.
      * @param {number} [expiration] - Optional expiration time in seconds. If provided, the expiration
      * @param {string} [version] - The version of the new storage item.
-     *                                is set to the current time plus the specified hours.
      * @return {IStorageItem} The newly created storage item.
      */
     private createNewItem;
     /**
-     * Updates the specified storage item with a new version and optional expiration. If the item does not
-     * exist, it is added with the provided data.
+     * Updates an existing storage item with new data, version, and expiration time.
      *
-     * @param {IStorageItem} item - The storage item to be updated or added.
-     * @param {string} version - The version identifier for the new data.
-     * @param {any} data - The data to be stored in the specified version.
-     * @param {number} [expiration] - Optional expiration time in seconds. If not provided, the existing expiration remains.
-     *
-     * @return {void}
+     * @param {IStorageItem} existingItem - The existing item to update.
+     * @param {any} data - The new data to store.
+     * @param {string} version - The version to set for the item.
+     * @param {number} [expiration] - Optional expiration time for the item in seconds.
+     * @returns {IStorageItem} Returns the updated item.
      */
-    private updateOrAddValue;
+    private updateExistingItem;
     /**
      * Checks whether the given expiration timestamp has passed.
      *

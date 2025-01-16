@@ -38,10 +38,6 @@ A singleton class that provides methods to interact with `localStorage`.
 
   Clears all items in `localStorage`.
 
-- **`removeVersionItem(key: string, version: string): void`**
-
-  Removes a specific version of an item by the given key from `localStorage`.
-
 ### `ObjectVersionHelper`
 
 A class that provides methods to generate version hashes for objects based on their structure.
@@ -70,7 +66,7 @@ const store = LocalStoreX.getInstance();
 const data = { some: 'data', nested: { field: 'value' } };
 
 // Store the item with the generated version hash
-store.setItem('key', data,  86400, versionHash);
+store.setItem('key', data, 86400, versionHash);
 
 // Retrieve the item
 const retrievedData = store.getItem('key', versionHash);
