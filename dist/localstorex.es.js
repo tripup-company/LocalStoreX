@@ -1,5 +1,5 @@
 function isIStorageItem(obj) {
-  return obj && typeof obj === "object" && typeof obj.currentVersion === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && typeof obj.values === "object";
+  return obj && typeof obj === "object" && typeof obj.version === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && (typeof obj.value === "object" || obj.value === "string");
 }
 class LocalStoreX {
   /**
@@ -7,7 +7,7 @@ class LocalStoreX {
    * Also performs cleanup of expired items.
    *
    * @param {string} defaultVersion - An instance used to manage versioning of objects.
-   * @param {number} [defaultExpiration=null] - The default expiration time for items in hours.
+   * @param {number} [defaultExpiration=null] - The default expiration time for items in seconds.
    *
    * @return {void}
    */
@@ -48,12 +48,14 @@ class LocalStoreX {
    * @param {string} key - The key under which the data will be stored.
    * @param {any} data - The data to be stored.
    * @param {number} [expiration] - Optional expiration time for the data in seconds.
-   * @param {string | number} [providedVersion] - Optional version information for the data.* @return {void}
+   * @param {string | number} [providedVersion] - Optional version information for the data.*
+   * @return {void}
    */
   setItem(key, data, expiration, providedVersion) {
-    const item = this.getExistingItem(key) ?? this.createNewItem(expiration, providedVersion);
-    this.updateOrAddValue(item, data, expiration, providedVersion);
-    localStorage.setItem(key, JSON.stringify(item));
+    const version = providedVersion || this.defaultVersion;
+    const existingItem = this.getExistingItem(key);
+    const updatedItem = existingItem ? this.updateExistingItem(existingItem, data, version, expiration) : this.createNewItem(data, expiration, version);
+    localStorage.setItem(key, JSON.stringify(updatedItem));
   }
   /**
    * Retrieves an item from storage by its key and optional version.
@@ -68,8 +70,11 @@ class LocalStoreX {
       localStorage.removeItem(key);
       return null;
     }
-    const currentValue = item.values[version ?? this.defaultVersion];
-    return currentValue ? currentValue : null;
+    const actualVersion = version || this.defaultVersion;
+    if (item.version === actualVersion) {
+      return item.value;
+    }
+    return null;
   }
   /**
    * Removes an item from the local storage based on the specified key.
@@ -87,25 +92,6 @@ class LocalStoreX {
    */
   clear() {
     localStorage.clear();
-  }
-  /**
-   * Removes a specific version entry associated with the given key from storage.
-   *
-   * @param {string} key - The key associated with the item in storage.
-   * @param {string} version - The version of the item to be removed.
-   * @return {void}
-   */
-  removeVersionItem(key, version) {
-    const item = this.getExistingItem(key);
-    if (!item)
-      return;
-    delete item.values[version];
-    if (Object.keys(item.values).length === 0) {
-      localStorage.removeItem(key);
-    } else {
-      item.currentVersion = Object.keys(item.values)[Object.keys(item.values).length - 1];
-      localStorage.setItem(key, JSON.stringify(item));
-    }
   }
   /**
    * Retrieves an existing item from local storage.
@@ -128,33 +114,34 @@ class LocalStoreX {
   /**
    * Creates a new storage item with the given version and optional expiration time.
    *
+   * @param {any} data - The data to be stored.
    * @param {number} [expiration] - Optional expiration time in seconds. If provided, the expiration
    * @param {string} [version] - The version of the new storage item.
-   *                                is set to the current time plus the specified hours.
    * @return {IStorageItem} The newly created storage item.
    */
-  createNewItem(expiration, version) {
+  createNewItem(data, expiration, version) {
     return {
-      currentVersion: version ?? this.defaultVersion,
+      version: version ?? this.defaultVersion,
       expiration: expiration ? Date.now() + expiration * 1e3 : this.defaultExpiration,
-      values: {}
+      value: data
     };
   }
   /**
-   * Updates the specified storage item with a new version and optional expiration. If the item does not
-   * exist, it is added with the provided data.
+   * Updates an existing storage item with new data, version, and expiration time.
    *
-   * @param {IStorageItem} item - The storage item to be updated or added.
-   * @param {string} version - The version identifier for the new data.
-   * @param {any} data - The data to be stored in the specified version.
-   * @param {number} [expiration] - Optional expiration time in seconds. If not provided, the existing expiration remains.
-   *
-   * @return {void}
+   * @param {IStorageItem} existingItem - The existing item to update.
+   * @param {any} data - The new data to store.
+   * @param {string} version - The version to set for the item.
+   * @param {number} [expiration] - Optional expiration time for the item in seconds.
+   * @returns {IStorageItem} Returns the updated item.
    */
-  updateOrAddValue(item, data, expiration, version) {
-    item.currentVersion = version ?? item.currentVersion;
-    item.expiration = expiration ? Date.now() + expiration * 1e3 : item.expiration;
-    item.values[version ?? item.currentVersion] = data;
+  updateExistingItem(existingItem, data, version, expiration) {
+    return {
+      ...existingItem,
+      version,
+      value: data,
+      expiration: expiration ? Date.now() + expiration * 1e3 : existingItem.expiration
+    };
   }
   /**
    * Checks whether the given expiration timestamp has passed.
