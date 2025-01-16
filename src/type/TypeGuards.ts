@@ -7,9 +7,11 @@ import { IStorageItem } from './IStorageItem';
  * @return {boolean} - Returns true if the object is an IStorageItem, otherwise false.
  */
 export function isIStorageItem(obj: any): obj is IStorageItem {
-    return obj &&
+    return (
+        obj &&
         typeof obj === 'object' &&
         typeof obj.version === 'string' &&
         (typeof obj.expiration === 'number' || obj.expiration === null) &&
-        (typeof obj.value === 'object' || obj.value === 'string');
+        obj.value !== undefined
+    );
 }
