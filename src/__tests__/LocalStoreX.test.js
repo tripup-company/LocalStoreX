@@ -1,10 +1,9 @@
 import LocalStoreX from '../LocalStoreX';
-import md5 from 'md5';
 describe('LocalStoreX', () => {
     // Store the original instance to be reset back after tests
     let originalInstance;
     beforeAll(() => {
-        // We store the original instance before modifying it in tests
+        // Save the original instance before modifying it in tests
         originalInstance = LocalStoreX.instance;
     });
     afterEach(() => {
@@ -25,6 +24,51 @@ describe('LocalStoreX', () => {
         const retrievedData = instance.getItem(key, 'v1');
         expect(retrievedData).toEqual(data);
     });
+    test('should set and get a string item with version', () => {
+        const key = 'testKey';
+        const data = 'some string';
+        const instance = LocalStoreX.getInstance();
+        instance.setItem(key, data, 30, 'v1');
+        const retrievedData = instance.getItem(key, 'v1');
+        expect(retrievedData).toEqual(data);
+    });
+    test('should set and get a number item with version', () => {
+        const key = 'testKey';
+        const data = 455445;
+        const instance = LocalStoreX.getInstance();
+        instance.setItem(key, data, 30, 'v1');
+        const retrievedData = instance.getItem(key, 'v1');
+        expect(retrievedData).toEqual(data);
+    });
+    test('should set and get a float item with version', () => {
+        const key = 'testKey';
+        const data = 10.258;
+        const instance = LocalStoreX.getInstance();
+        instance.setItem(key, data, 30, 'v1');
+        const retrievedData = instance.getItem(key, 'v1');
+        expect(retrievedData).toEqual(data);
+    });
+    test('should set and get empty expired item', (done) => {
+        const key = 'testKey';
+        const data = 10.258;
+        const instance = LocalStoreX.getInstance();
+        console.log(instance.getItem(key, 'v1'));
+        instance.setItem(key, data, 2, 'v1');
+        // Test that data exists before expiration
+        setTimeout(() => {
+            const retrievedData = instance.getItem(key, 'v1');
+            console.log('retrieved: ', retrievedData);
+            expect(retrievedData).toEqual(data);
+        }, 1000);
+        // Test after expiration
+        setTimeout(() => {
+            const retrievedData = instance.getItem(key, 'v1');
+            console.log('retrieved: ', retrievedData);
+            expect(retrievedData).toEqual(null);
+            expect(localStorage.getItem(key)).toEqual(null);
+            done();
+        }, 3000);
+    });
     test('should update an item with the same version', () => {
         const key = 'testKey';
         const initialData = { foo: 'bar' };
@@ -39,12 +83,12 @@ describe('LocalStoreX', () => {
         const key = 'testKey';
         const data = { foo: 'bar' };
         const instance = LocalStoreX.getInstance();
-        instance.setItem(key, data, 0.0001, 'v1'); // Время истечения ~0.36 сек
+        instance.setItem(key, data, 0.0001, 'v1'); // Expiration time ~0.36 sec
         expect(instance.getItem(key, 'v1')).toEqual(data);
-        // Ждём немного времени, чтобы время истекло
-        return new Promise(resolve => setTimeout(() => {
+        // Wait some time for expiration
+        return new Promise((resolve) => setTimeout(() => {
             const expiredData = instance.getItem(key, 'v1');
-            expect(expiredData).toBeNull(); // Данные должны быть удалены
+            expect(expiredData).toBeNull(); // Data should be removed
             resolve(null);
         }, 500));
     });
@@ -85,7 +129,7 @@ describe('LocalStoreX', () => {
     test('should set and get an item using version hash', () => {
         const key = 'testKey';
         const data = { foo: 'bar', test: 'bar2' };
-        const defaultVersion = md5(JSON.stringify({ foo: 'bar', test: 'bar2' }));
+        const defaultVersion = 'v1';
         const instance = LocalStoreX.getInstance();
         instance.setItem(key, data, undefined, defaultVersion);
         const retrievedData = instance.getItem(key, defaultVersion);

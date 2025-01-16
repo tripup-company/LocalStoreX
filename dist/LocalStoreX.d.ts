@@ -13,7 +13,7 @@ export default class LocalStoreX {
      * Constructor for initializing the object with a version helper and an optional default expiration time.
      * Also performs cleanup of expired items.
      *
-     * @param {string} defaultVersion - An instance used to manage versioning of objects.
+     * @param {string} defaultVersion - Default version for managing stored objects.
      * @param {number} [defaultExpiration=null] - The default expiration time for items in seconds.
      *
      * @return {void}
@@ -29,8 +29,8 @@ export default class LocalStoreX {
      * @return {LocalStoreX} The singleton instance of the LocalStoreX class.
      */
     static getInstance(config?: {
-        defaultVersion: 'v1';
-        defaultExpiration: null;
+        defaultVersion: string;
+        defaultExpiration: number | null;
     }): LocalStoreX;
     /**
      * Stores an item in the local storage with the specified key, data, and optional version and expiration.
@@ -38,7 +38,7 @@ export default class LocalStoreX {
      * @param {string} key - The key under which the data will be stored.
      * @param {any} data - The data to be stored.
      * @param {number} [expiration] - Optional expiration time for the data in seconds.
-     * @param {string | number} [providedVersion] - Optional version information for the data.*
+     * @param {string} [providedVersion] - Optional version information for the data.
      * @return {void}
      */
     setItem(key: string, data: any, expiration?: number, providedVersion?: string): void;
@@ -54,13 +54,13 @@ export default class LocalStoreX {
      * Removes an item from the local storage based on the specified key.
      *
      * @param {string} key - The key of the item to be removed from local storage.
-     * @return {void} No return value.
+     * @return {void}
      */
     removeItem(key: string): void;
     /**
      * Clears all key-value pairs stored in the local storage.
      *
-     * @return {void} - No return value.
+     * @return {void}
      */
     clear(): void;
     /**
@@ -74,7 +74,7 @@ export default class LocalStoreX {
      * Creates a new storage item with the given version and optional expiration time.
      *
      * @param {any} data - The data to be stored.
-     * @param {number} [expiration] - Optional expiration time in seconds. If provided, the expiration
+     * @param {number} [expiration] - Optional expiration time in seconds.
      * @param {string} [version] - The version of the new storage item.
      * @return {IStorageItem} The newly created storage item.
      */
