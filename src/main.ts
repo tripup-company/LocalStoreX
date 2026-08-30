@@ -1,1 +1,10 @@
 export { default as LocalStoreX } from './LocalStoreX';
+export type { IStoreConfig } from './LocalStoreX';
+export { SessionStoreX } from './SessionStoreX';
+export type { ISessionStoreConfig } from './SessionStoreX';
+export { MemoryStorageDriver } from './driver/MemoryStorageDriver';
+export { resolveStorageDriver } from './driver/resolveStorageDriver';
+export type { StorageDriverInput, StorageDriverName } from './driver/resolveStorageDriver';
+export type { IStorageDriver } from './type/IStorageDriver';
+export type { IStorageItem } from './type/IStorageItem';
+export { isIStorageItem } from './type/TypeGuards';

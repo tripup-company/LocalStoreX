@@ -11,5 +11,7 @@ export default defineConfig({
             fileName: (format) => `localstorex.${format}.js`
         }
     },
-    plugins: [dts()]
+    // Tests are not part of the published surface, and emitting their declarations put a stray
+    // .d.ts in dist/ that jest then collected as a test suite of its own.
+    plugins: [dts({ exclude: ['src/**/__tests__/**'] })]
 });

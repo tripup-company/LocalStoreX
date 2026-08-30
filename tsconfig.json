@@ -6,6 +6,10 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
 
+    /* Emission is vite's job. Without this, the `tsc` in `npm run build` compiled every source
+       file to a sibling .js inside src/, which is how those stray artifacts got committed. */
+    "noEmit": true,
+
     /* Bundler mode */
     "moduleResolution": "Bundler",
     "isolatedModules": true,
