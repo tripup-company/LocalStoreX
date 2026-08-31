@@ -163,4 +163,4 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   exports2.LocalStoreX = LocalStoreX;
   Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
 }));
-//# sourceMappingURL=localstorex.umd.js.map
+//# sourceMappingURL=localstorex.umd.cjs.map

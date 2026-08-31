@@ -13,8 +13,25 @@ export default defineConfig({
         lib: {
             entry: './src/main.ts',
             name: 'LocalStoreX',
-            fileName: (format) => `localstorex.${format}.js`
+            // The UMD build must not use the `.js` extension: this package is
+            // `"type": "module"`, so Node would load a `.js` file as ESM and the
+            // `require` condition in `exports` would break. `.cjs` is unambiguous.
+            fileName: (format) =>
+                format === 'umd' ? 'localstorex.umd.cjs' : `localstorex.${format}.js`
         }
     },
-    plugins: [dts()]
+    plugins: [
+        dts({
+            // The tests are part of the tsconfig `include`, but their `.d.ts`
+            // files have no business in `dist/`, which is committed and consumed
+            // straight from git.
+            exclude: ['src/__tests__/**'],
+            // Roll every declaration into a single self-contained `main.d.ts`.
+            // Emitting one file per source leaves extensionless relative
+            // specifiers (`from './LocalStoreX'`) in the output, which is a
+            // hard error (TS2834) for consumers on `moduleResolution: node16`
+            // or `nodenext`. A rolled-up file has no relative imports at all.
+            rollupTypes: true
+        })
+    ]
 });
