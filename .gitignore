@@ -9,6 +9,13 @@ lerna-debug.log*
 
 node_modules
 #dist
+
+# Compiled output emitted next to the TypeScript sources. `tsc` is a
+# typecheck-only step now (see tsconfig "noEmit"), so nothing here is
+# expected — this keeps a stray build from being committed again.
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
 dist-ssr
 *.local
 
