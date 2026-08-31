@@ -1,8 +1,8 @@
 {
   "name": "localstorex",
   "private": true,
-  "version": "1.1.0",
-  "description": "A TypeScript wrapper around the localStorage API adding per-item versioning and automatic expiration.",
+  "version": "2.0.0",
+  "description": "A TypeScript wrapper around the browser's Web Storage adding per-item versioning and automatic expiration, with a choice of storage backend.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -37,6 +37,7 @@
   ],
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "tsc && vite build && node scripts/emit-cjs-types.mjs",
     "preview": "vite preview",
     "test": "jest"
