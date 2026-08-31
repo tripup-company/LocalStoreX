@@ -1,7 +1,10 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 function isIStorageItem(obj) {
   return obj && typeof obj === "object" && typeof obj.version === "string" && (typeof obj.expiration === "number" || obj.expiration === null) && obj.value !== void 0;
 }
-class LocalStoreX {
+const _LocalStoreX = class _LocalStoreX {
   /**
    * Constructor for initializing the object with a version helper and an optional default expiration time.
    * Also performs cleanup of expired items.
@@ -12,18 +15,10 @@ class LocalStoreX {
    * @return {void}
    */
   constructor(defaultVersion = "v1", defaultExpiration = null) {
-    Object.defineProperty(this, "defaultVersion", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: defaultVersion
-    });
-    Object.defineProperty(this, "defaultExpiration", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: defaultExpiration
-    });
+    __publicField(this, "defaultVersion");
+    __publicField(this, "defaultExpiration");
+    this.defaultVersion = defaultVersion;
+    this.defaultExpiration = defaultExpiration;
   }
   /**
    * Returns a singleton instance of the LocalStoreX class.
@@ -35,12 +30,12 @@ class LocalStoreX {
    * @return {LocalStoreX} The singleton instance of the LocalStoreX class.
    */
   static getInstance(config) {
-    if (!LocalStoreX.instance) {
+    if (!_LocalStoreX.instance) {
       const expiration = (config == null ? void 0 : config.defaultExpiration) ?? null;
       const version = (config == null ? void 0 : config.defaultVersion) ?? "v1";
-      LocalStoreX.instance = new LocalStoreX(version, expiration);
+      _LocalStoreX.instance = new _LocalStoreX(version, expiration);
     }
-    return LocalStoreX.instance;
+    return _LocalStoreX.instance;
   }
   /**
    * Stores an item in the local storage with the specified key, data, and optional version and expiration.
@@ -102,8 +97,7 @@ class LocalStoreX {
   getExistingItem(key) {
     try {
       const item = localStorage.getItem(key);
-      if (!item)
-        return null;
+      if (!item) return null;
       const parsedItem = JSON.parse(item);
       return isIStorageItem(parsedItem) ? parsedItem : null;
     } catch (error) {
@@ -152,7 +146,16 @@ class LocalStoreX {
   isExpired(expiration) {
     return expiration !== null && Date.now() > expiration;
   }
-}
+};
+/**
+ * LocalStoreX is an instance of a class designed to handle local storage operations.
+ * It provides methods for storing, retrieving, and managing data in the browser's local storage.
+ *
+ * Common use cases include saving user preferences, caching data for offline use,
+ * and persisting application state between sessions.
+ */
+__publicField(_LocalStoreX, "instance");
+let LocalStoreX = _LocalStoreX;
 export {
   LocalStoreX
 };

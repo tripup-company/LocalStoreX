@@ -6,6 +6,10 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
 
+    /* Emit: `vite build` produces the bundle and vite-plugin-dts the
+       declarations, so the `tsc` step only needs to typecheck. */
+    "noEmit": true,
+
     /* Bundler mode */
     "moduleResolution": "Bundler",
     "isolatedModules": true,
