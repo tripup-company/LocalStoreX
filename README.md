@@ -4,11 +4,31 @@ LocalStoreX is a TypeScript library that provides a wrapper around the `localSto
 
 ## Installation
 
-To install LocalStoreX, use [npm](https://www.npmjs.com/):
+LocalStoreX is an internal package and is **not published to npm**. Install it
+straight from this repository by adding it to your `package.json`:
 
-```bash
-npm install localstorex
+```json
+{
+  "dependencies": {
+    "localstorex": "https://github.com/tripup-company/LocalStoreX.git"
+  }
+}
 ```
+
+To pin a specific release instead of tracking the default branch, append a tag
+or commit-ish:
+
+```json
+"localstorex": "https://github.com/tripup-company/LocalStoreX.git#v1.1.0"
+```
+
+The build output under `dist/` is committed on purpose: an install from git
+runs no build step, so the bundles and the type declarations have to be in the
+repository. After changing anything under `src/`, run `yarn build` and commit
+the regenerated `dist/` along with it.
+
+The package provides an ES module build, a UMD build for `<script>` tags, and
+TypeScript declarations for both.
 
 ## Classes
 
@@ -18,9 +38,9 @@ A singleton class that provides methods to interact with `localStorage`.
 
 #### Methods
 
-- **`getInstance(config?: {defaultVersion?: string, defaultExpiration?: number | null}): LocalStoreX`**
+- **`getInstance(config?: {defaultVersion: string, defaultExpiration: number | null}): LocalStoreX`**
 
-  Returns the singleton instance of `LocalStoreX`. You can provide an optional configuration object to set the default version and expiration time.
+  Returns the singleton instance of `LocalStoreX`. The configuration object is optional, but when you pass one both of its fields are required. It only takes effect on the first call, since later calls return the already-created instance.
 
 - **`setItem(key: string, value: any, expiration?: number, providedVersion?: string): void`**
 
@@ -38,41 +58,25 @@ A singleton class that provides methods to interact with `localStorage`.
 
   Clears all items in `localStorage`.
 
-### `ObjectVersionHelper`
-
-A class that provides methods to generate version hashes for objects based on their structure.
-
-#### Methods
-
-- **`generateVersionHash(data: any, isDeep: boolean = false): string`**
-
-  Generates a version hash for the given data. This hash can be used as a version identifier for storing objects. The `isDeep` flag indicates whether to sort keys deeply for nested structures.
-
 ### Usage Example
-
-Here's an example of how to use `ObjectVersionHelper` with `LocalStoreX` to generate version hashes based on object structure:
 
 ```typescript
 import { LocalStoreX } from 'localstorex';
-import { ObjectVersionHelper } from 'localstorex';
 
-// Optionally, enable deep traversal for more detailed versioning
-const versionHash = ObjectVersionHelper.generateVersionHash({ some: 'data', nested: { field: 'value' } }, true);
-
-// Get an instance of LocalStoreX
+// Get the singleton instance
 const store = LocalStoreX.getInstance();
 
 // Data to be stored
 const data = { some: 'data', nested: { field: 'value' } };
 
-// Store the item with the generated version hash
-store.setItem('key', data, 86400, versionHash);
+// Store the item with a 1-day expiration under an explicit version
+store.setItem('key', data, 86400, 'v2');
 
-// Retrieve the item
-const retrievedData = store.getItem('key', versionHash);
+// Retrieve the item - returns null if it expired or the version does not match
+const retrievedData = store.getItem('key', 'v2');
 
-// Remove the item for the specific version
-store.removeVersionItem('key', versionHash);
+// Remove the item
+store.removeItem('key');
 
 // Clear all items
 store.clear();
@@ -85,6 +89,5 @@ This example demonstrates setting an item in `localStorage` with a 1-day expirat
 - Expiration times are optional and specified in seconds. If not provided, items will be stored indefinitely.
 - Items are versioned to allow storing multiple versions of the same item under the same key. If no version is provided, the default version `'v1'` will be used.
 - Expired items are automatically cleaned up on access.
-- `ObjectVersionHelper` can be used to generate consistent version hashes for objects based on their structure, making it easier to manage updates and changes.
 
-By using `LocalStoreX` and `ObjectVersionHelper`, you can efficiently manage versioned and expirable data in the browser's `localStorage`.
+By using `LocalStoreX`, you can efficiently manage versioned and expirable data in the browser's `localStorage`.
