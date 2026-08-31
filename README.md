@@ -19,7 +19,7 @@ To pin a specific release instead of tracking the default branch, append a tag
 or commit-ish:
 
 ```json
-"localstorex": "https://github.com/tripup-company/LocalStoreX.git#v1.0.2"
+"localstorex": "https://github.com/tripup-company/LocalStoreX.git#v1.1.0"
 ```
 
 The build output under `dist/` is committed on purpose: an install from git
